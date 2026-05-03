@@ -3,7 +3,7 @@ name: wrap-continue
 description: Mid-task context reset — light capture, mandatory commit+push, hot-resume pickup prompt. Use when recycling a long-lived thread to free context while continuing the same work. NOT for end-of-day wrap — use /wrap for that.
 license: MIT
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   category: workflow
   domain: session-management
   status: stable
@@ -59,6 +59,16 @@ The pickup prompt must include:
 
 Format the pickup prompt as a fenced code block so it's easy to copy.
 
+After rendering the pickup prompt content, pipe it to `pbcopy` so Sean can paste directly into the next thread without selecting:
+
+```bash
+cat <<'EOF' | pbcopy
+[prompt content here]
+EOF
+```
+
+If `pbcopy` is unavailable (non-macOS), skip silently — add a note in the status table that clipboard copy was unavailable.
+
 ## Output Format
 
 ```
@@ -69,11 +79,27 @@ Format the pickup prompt as a fenced code block so it's easy to copy.
   ┌──────────┬──────────────────────────────────────────────┐
   │ Git      │ 2 commits pushed (abc1234..def5678)          │
   │ Capture  │ 1 feedback saved / skipped                   │
+  │ Clipboard│ Copied to clipboard                          │
   │ Repo     │ Clean, up to date with origin                │
   └──────────┴──────────────────────────────────────────────┘
 ```
 
-Then the pickup prompt in a fenced block:
+Then the wrapped-present, cut-lines, and pickup prompt:
+
+```
+              ╱╲ ╱╲
+             ╱  ╳  ╲
+        ╭───────┴───────╮
+        │       │       │
+        │ ──────┼────── │
+        │       │       │
+        │  DO NOT OPEN  │
+        │  UNTIL NEXT   │
+        │   SESSION     │
+        ╰───────────────╯
+
+   ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+```
 
 ```
 ## Pickup prompt (paste at start of next thread)
@@ -83,6 +109,10 @@ Then the pickup prompt in a fenced block:
 [immediate next action]
 [non-obvious context / constraints]
 Working directory: ~/Code/[project]
+```
+
+```
+   ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ✂
 ```
 
 ## Judgment Calls
