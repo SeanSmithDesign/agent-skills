@@ -70,11 +70,23 @@ Save feedback, decisions, or references that future sessions should know about. 
 
 Done before session notes so notes can reference saved memory files. Skip if nothing non-obvious was learned.
 
-### 5. Orchestrator State (L1 — if orchestrator thread)
+### 5. Orchestrator State (orchestrator threads — mandatory if any delegation or decision happened)
 
 Update `ORCHESTRATOR.md` in `.claude/projects/<path>/memory/` with architecture changes, decisions, fragile areas, recent delegations. Keep under 300 lines. Prune stale Decision Log and Recent Delegations entries.
 
-If step 1 deferred any gaps as follow-up tasks, record them in **In-Flight Work** here. Skip if not an orchestrator thread or nothing changed architecturally.
+If step 1 deferred any gaps as follow-up tasks, record them in **In-Flight Work** here.
+
+**This update is mandatory if ANY of the following are true:**
+
+- Any subagent was delegated this session (whether it succeeded or failed)
+- Any architectural decision was made
+- Any in-flight work was added or completed
+- Step 1 deferred any gaps (they must land in ORCHESTRATOR.md)
+- The session produced commits (code shipped that should be reflected in context)
+
+Skip ONLY if not an orchestrator thread, AND no subagents were delegated, AND no decisions were made, AND no in-flight work changed.
+
+> **Gotcha:** A session that ends cleanly after shipping a milestone still needs ORCHESTRATOR.md updated — clean endings are not an excuse to skip. The skip is only valid for pure-research or pure-chat sessions where nothing changed.
 
 ### 6. Session Notes (L2 — if meaningful work happened)
 
