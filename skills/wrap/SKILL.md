@@ -72,7 +72,7 @@ Done before session notes so notes can reference saved memory files. Skip if not
 
 ### 5. Orchestrator State (orchestrator threads — mandatory if any delegation or decision happened)
 
-Update `ORCHESTRATOR.md` in `.claude/projects/<path>/memory/` with architecture changes, decisions, fragile areas, recent delegations. Keep under 300 lines. Prune stale Decision Log and Recent Delegations entries.
+Update `ORCHESTRATOR.md` in `.claude/projects/<path>/memory/` with architecture changes, decisions, fragile areas, recent delegations. Keep under 20,000 chars — measured with `wc -c`, never in lines. Prune stale Decision Log and Recent Delegations entries.
 
 If step 1 deferred any gaps as follow-up tasks, record them in **In-Flight Work** here.
 

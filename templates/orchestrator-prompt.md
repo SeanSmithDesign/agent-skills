@@ -264,7 +264,7 @@ Before compacting this thread or ending a long session:
 [Last 5-10 subagent delegations and their outcomes — prune older entries]
 ```
 
-3. **Keep ORCHESTRATOR.md under 300 lines** — prune stale Decision Log and Recent Delegations entries on each update.
+3. **Keep ORCHESTRATOR.md under 20,000 chars — measured with `wc -c`, never in lines.** The lines are paragraphs, so a line count hides real growth. Prune stale Decision Log and Recent Delegations entries on each update.
 
 4. **Commit ORCHESTRATOR.md** alongside session notes.
 
