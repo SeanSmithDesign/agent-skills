@@ -16,49 +16,75 @@ npx skills add seansmithworks/agent-skills -s '*' -g       # all of them, global
 
 ---
 
+## At a glance
+
+| Skill | Before → After |
+| --- | --- |
+| [`/wrap`](#wrap) | Messy end-of-day session → committed, captured, closed |
+| [`/wrap-continue`](#wrap-continue) | Context filling up mid-task → committed, closed, hot-resume prompt ready |
+| [`/orchestrator-update`](#orchestrator-update) | Pending config improvements sitting unreviewed → applied and eval-checked |
+| [`/orchestrator-scaffold`](#orchestrator-scaffold) | New or half-set-up project → agent and grounding files in place |
+| [`/orchestrator-route`](#orchestrator-route) | Over-cap ORCHESTRATOR.md → facts routed to their owners, file back under cap |
+| [`/gh-clean-branches`](#gh-clean-branches) | Local branches piling up → stale and merged ones pruned |
+| [`/gh-pr-triage`](#gh-pr-triage) | Open PRs scattered across repos → grouped by what needs action |
+| [`/gh-fork-sync`](#gh-fork-sync) | Fork drifting behind upstream → synced and pushed to origin |
+| [`/gh-stale-issues`](#gh-stale-issues) | Issue list drifted into noise → triaged into ready-to-run commands |
+
+---
+
 ## What's here
 
-Four families. Nine skills. All opinionated.
+Three families. Nine skills. All opinionated.
 
 ### Wrap family: session hygiene
 
 Every Claude Code session ends the same two ways: you're done for the day, or you're not done but the context window is getting expensive. These are different situations that need different behavior.
 
-**`/wrap`**: End-of-session. Heavy capture. Runs in this order: plan reconciliation (if orchestrator), commit and push, ticket tracker, memories, orchestrator state, session notes, long-term notes. The goal is to leave nothing on the table, every decision, every commit SHA, every deferred task captured before the thread closes.
+### /wrap
 
-```bash
-npx skills add seansmithworks/agent-skills --skill wrap
-```
+`Messy end-of-day session → committed, captured, closed`
 
-**`/wrap-continue`**: Mid-task context reset. Light capture. Commit and push (mandatory), save anything you'd lose if context cleared, generate a hot-resume pickup prompt. The goal is to close the thread and start the next one with a precise handoff, not to summarize everything, just to preserve the thread.
+**When:** you're done for the day, or longer.
+**Does:** runs plan reconciliation (orchestrator threads only), then commits and pushes, updates the ticket tracker, writes hot memories, refreshes orchestrator state, writes session notes, and files long-term notes. No pickup prompt, that's what `/wrap-continue` is for. Every step is optional, it skips what isn't relevant and never forces a commit if nothing changed.
+**Install:** `npx skills add seansmithworks/agent-skills --skill wrap`
 
-```bash
-npx skills add seansmithworks/agent-skills --skill wrap-continue
-```
+### /wrap-continue
 
-The distinction matters. Running the heavy end-of-day flow on a continue wastes the tokens you were trying to save. Running the light continue flow on an end-of-day loses capture. Two skills, two modes.
+`Context filling up mid-task → committed, closed, hot-resume prompt ready`
+
+**When:** you're recycling a long-lived thread to free context, but the work itself isn't done.
+**Does:** commits and pushes (mandatory), saves anything you'd lose on context clear, and generates a hot-resume pickup prompt for the next thread. Light capture, not a retrospective, the goal is a precise handoff, not a full summary.
+**Install:** `npx skills add seansmithworks/agent-skills --skill wrap-continue`
+
+The distinction matters. Run the heavy end-of-day flow on a continue and you waste the tokens you were trying to save. Run the light continue flow at end-of-day and you lose capture.
 
 ### Orchestrator family: pattern hygiene
 
 The orchestrator is a long-lived Claude Code thread that never writes code. It learns the codebase, maintains context across compactions, and delegates all implementation to subagents. These three skills maintain the orchestrator itself, not the work it does.
 
-**`/orchestrator:update`**: Config evolution, opt-in. Reads `~/.claude/PENDING-UPDATES.md`, presents pending entries, applies selected ones via subagents, and validates with an eval suite. The mandatory baseline plus post-apply eval loop is non-bypassable by design, you need a signal before and after any config change to know if behavior regressed.
+### /orchestrator-update
 
-```bash
-npx skills add seansmithworks/agent-skills --skill orchestrator-update
-```
+`Pending config improvements sitting unreviewed → applied and eval-checked`
 
-**`/orchestrator:scaffold`**: Project setup and gap-filling. Three modes: default (auto-detect what's missing), `lifecycle` (scaffold the six agent files: product, experience, craft, build, data, quality), and `grounding` (interview-driven drafting of mission.md, brand.md, principles.md). The grounding files are the identity layer, they travel with the code, survive compaction, and give every subagent a consistent product lens without you having to re-explain context each session.
+**When:** you run `/orchestrator:update`, ask to check pending updates, or a session starts with unreviewed entries in the registry.
+**Does:** reads `~/.claude/PENDING-UPDATES.md`, presents pending entries, applies the ones you select via subagents, and validates with your eval suite. Opt-in, nothing auto-applies. The baseline-then-eval loop is non-bypassable by design, you need a before and after signal to know if a config change regressed behavior.
+**Install:** `npx skills add seansmithworks/agent-skills --skill orchestrator-update`
 
-```bash
-npx skills add seansmithworks/agent-skills --skill orchestrator-scaffold
-```
+### /orchestrator-scaffold
 
-**`/orchestrator-route`**: Routes an over-cap `ORCHESTRATOR.md` down to a router-shaped file without destroying durable value. Use it when a size gate fires, when `/wrap` reports the file is over its 20,000-char cap, or when you say "route this" or "this file is too big." It's not a tidy-up pass, the trigger is size or staleness, and the operation is routing durable facts to the memory files that own them, never deleting by age. Six gates keep it honest: never evict by recency, route to the on-demand layer instead of always-read agent files, never archive a fact that's still true, verify every fact kept a home, commit a baseline before editing, and measure the whole boot set, not just the one file, before and after.
+`New or half-set-up project → agent and grounding files in place`
 
-```bash
-npx skills add seansmithworks/agent-skills --skill orchestrator-route
-```
+**When:** you run `/orchestrator:scaffold`, say "scaffold this project" or "add mission brand principles," or Phase 1 boot check surfaces missing scaffolding.
+**Does:** three modes. Default auto-detects what's missing. `lifecycle` scaffolds the six agent files (product, experience, craft, build, data, quality). `grounding` runs an interview to draft mission.md, brand.md, principles.md, the identity layer that survives compaction and gives every subagent a consistent product lens without you re-explaining context each session.
+**Install:** `npx skills add seansmithworks/agent-skills --skill orchestrator-scaffold`
+
+### /orchestrator-route
+
+`Over-cap ORCHESTRATOR.md → facts routed to their owners, file back under cap`
+
+**When:** a size gate fires, `/wrap` reports the file over its 20,000-char cap, or you say "route this" or "this file is too big."
+**Does:** routes durable facts out of `ORCHESTRATOR.md` to the memory files that own them, it's a router, not a store or a log. Six gates keep it honest: never evict by recency, route to the on-demand layer instead of always-read agent files, never archive a fact that's still true, verify every fact kept a home, commit a baseline before editing, measure the whole boot set (not just the one file) before and after. Not a tidy-up pass, it triggers on size or staleness only.
+**Install:** `npx skills add seansmithworks/agent-skills --skill orchestrator-route`
 
 The orchestrator family requires two companion files that aren't skills, copy them from `templates/` before using:
 
@@ -83,29 +109,37 @@ claude --append-system-prompt-file ~/.claude/orchestrator-prompt.md
 
 Repos accumulate debt the same way context windows do, gradually, then all at once. Stale branches, ignored PRs, dusty issues. These four skills clear that debt without ceremony.
 
-**`/gh-clean-branches`**: Prunes local branches whose remote is gone and feature branches already merged into main. Shows candidates, waits for confirmation, uses safe delete. Never force-deletes without an explicit nod.
+### /gh-clean-branches
 
-```bash
-npx skills add seansmithworks/agent-skills --skill gh-clean-branches
-```
+`Local branches piling up → stale and merged ones pruned`
 
-**`/gh-pr-triage`**: Surveys your open PRs and PRs waiting on your review. Groups into: your PRs needing action, PRs waiting on you to review, stale (>14 days). Concrete next-action suggestion per row. Read-only.
+**When:** your local branch list has drifted, old feature branches are hanging around.
+**Does:** detects branches whose remote is gone and feature branches already merged into main, shows a combined list, waits for confirmation, then does a safe delete. Never force-deletes without an explicit nod.
+**Install:** `npx skills add seansmithworks/agent-skills --skill gh-clean-branches`
 
-```bash
-npx skills add seansmithworks/agent-skills --skill gh-pr-triage
-```
+### /gh-pr-triage
 
-**`/gh-fork-sync`**: Syncs your fork's main with upstream. Shows how far behind you are, confirms the strategy, pushes to your origin. Hard safety rule: never pushes to upstream. (This rule exists because of a real incident involving an unintentional PR opened on an upstream repo, the guard is non-negotiable.)
+`Open PRs scattered across repos → grouped by what needs action`
 
-```bash
-npx skills add seansmithworks/agent-skills --skill gh-fork-sync
-```
+**When:** you want a status check on your open PRs and the ones waiting on your review.
+**Does:** groups PRs into your PRs needing action, PRs waiting on your review, and stale ones (14+ days), with a concrete next-action suggestion per row. Read-only.
+**Install:** `npx skills add seansmithworks/agent-skills --skill gh-pr-triage`
 
-**`/gh-stale-issues`**: Triages open issues by age and last activity. Groups into no-activity (90d+), no-author-response (30d+), needs labels, needs triage. Generates ready-to-run `gh` commands. Read-only, you run the commands.
+### /gh-fork-sync
 
-```bash
-npx skills add seansmithworks/agent-skills --skill gh-stale-issues
-```
+`Fork drifting behind upstream → synced and pushed to origin`
+
+**When:** your fork's main is behind upstream and you want it caught up.
+**Does:** shows how far behind you are, confirms the sync strategy, syncs, and pushes to your origin only. Hard safety rule: never pushes to upstream. That rule exists because of a real incident involving an unintentional PR opened on an upstream repo, the guard is non-negotiable.
+**Install:** `npx skills add seansmithworks/agent-skills --skill gh-fork-sync`
+
+### /gh-stale-issues
+
+`Issue list drifted into noise → triaged into ready-to-run commands`
+
+**When:** before a release, after a period of heavy development, or whenever the issue list needs a pass.
+**Does:** triages open issues by age and last activity into buckets, no-activity (90d+), no-author-response (30d+), needs labels, needs triage, and generates ready-to-run `gh` commands per issue. Read-only, you run the commands.
+**Install:** `npx skills add seansmithworks/agent-skills --skill gh-stale-issues`
 
 ---
 
@@ -144,3 +178,9 @@ Skills land in `~/.claude/skills/` and are available as slash commands in the ne
 These skills are built for the [open agent skills ecosystem](https://skills.sh/). Any SKILL.md-compatible harness can use them.
 
 Browse more skills at [skills.sh](https://skills.sh/).
+
+---
+
+## License
+
+MIT, see [LICENSE](LICENSE).
