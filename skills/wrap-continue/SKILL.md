@@ -85,7 +85,19 @@ Compact — sized for a fast re-read, not a report. 150–350 words is the targe
 
 **Render it inline in the response, in a single fenced block, and put every heading, label and instruction to the user *outside* the fence.** Anything inside the fence gets pasted into the next thread; a stray `## Pickup prompt` heading or a slash command inside it lands as garbage there. That block is the primary deliverable — the user must be able to see it, scroll back, and re-copy it.
 
-**Thread name.** `jq -r '[.nameSource, .name] | @tsv' ~/.claude/sessions/$CLAUDE_PID.json 2>/dev/null`. Carry it forward only if `nameSource` is `user`. If it is `derived`/`auto`, or the file or `jq` is missing, skip in silence — an auto slug like `code-55` carries no signal and must never be surfaced as though it did. When a user-set name exists: put `Thread: <name>` as the first line *inside* the block (prose, not a command), and below the block, outside it, give the working mechanism — `type /rename "<name>" in the new thread (or launch it as claude -n "<name>")`. `/rename` only fires as an entire message, so it cannot live in the paste.
+**Delimit the block.** Immediately after the opening fence, and again immediately before the closing fence, place a line of 60 `─` (U+2500) characters:
+
+```
+────────────────────────────────────────────────────────────
+```
+
+A full box would need every line padded to a fixed width, which breaks on long paths and wraps badly in narrow terminals — a bare rule is the ceiling. These delimiter lines are inside the fence and get pasted into the next thread along with everything else; that is intended, not noise, and they must not be stripped as cleanup.
+
+**Order inside the fence is fixed:** opening fence → top delimiter → `Thread:` line (when present) → body → recap instruction (below) → bottom delimiter → closing fence.
+
+**End the block with a recap gate, addressed to the next thread, not to Sean.** The last line inside the fence, before the bottom delimiter, instructs the next thread: before taking any action, state back in a few lines what it understands the objective to be and what it is about to do first, then wait for confirmation — not a full plan, an alignment check sized so Sean can confirm or correct in one reply. This is a gate the next thread waits on, not a recap it narrates while already working. It stays inside the fence, as the final line of the block, so it survives the paste — moving it outside the fence defeats the point.
+
+**Thread name.** `jq -r '[.nameSource, .name] | @tsv' ~/.claude/sessions/$CLAUDE_PID.json 2>/dev/null`. Carry it forward only if `nameSource` is `user`. If it is `derived`/`auto`, or the file or `jq` is missing, skip in silence — an auto slug like `code-55` carries no signal and must never be surfaced as though it did. When a user-set name exists: put `Thread: <name>` as the line inside the block immediately following the top delimiter (see ordering above; prose, not a command), and below the block, outside it, give the working mechanism — `type /rename "<name>" in the new thread (or launch it as claude -n "<name>")`. `/rename` only fires as an entire message, so it cannot live in the paste.
 
 **Clipboard** (convenience, best-effort, never a blocker):
 
