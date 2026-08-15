@@ -22,6 +22,7 @@ npx skills add seansmithworks/agent-skills -s '*' -g       # all of them, global
 | --- | --- |
 | [`/wrap`](#wrap) | Messy end-of-day session → committed, captured, closed |
 | [`/wrap-continue`](#wrap-continue) | Context filling up mid-task → committed, closed, hot-resume prompt ready |
+| [`/orchestrator-boot`](#orchestrator-boot) | New orchestrator thread → context loaded, ready to work |
 | [`/orchestrator-update`](#orchestrator-update) | Pending config improvements sitting unreviewed → applied and eval-checked |
 | [`/orchestrator-scaffold`](#orchestrator-scaffold) | New or half-set-up project → agent and grounding files in place |
 | [`/orchestrator-route`](#orchestrator-route) | Over-cap ORCHESTRATOR.md → facts routed to their owners, file back under cap |
@@ -34,7 +35,7 @@ npx skills add seansmithworks/agent-skills -s '*' -g       # all of them, global
 
 ## What's here
 
-Three families. Nine skills. All opinionated.
+Three families. Ten skills. All opinionated.
 
 ### Wrap family: session hygiene
 
@@ -61,6 +62,14 @@ The distinction matters. Run the heavy end-of-day flow on a continue and you was
 ### Orchestrator family: pattern hygiene
 
 The orchestrator is a long-lived Claude Code thread that never writes code. It learns the codebase, maintains context across compactions, and delegates all implementation to subagents. These three skills maintain the orchestrator itself, not the work it does.
+
+### /orchestrator-boot
+
+`New orchestrator thread → context loaded, ready to work`
+
+**When:** first activation of an orchestrator thread, or when you say "boot," "orchestrator boot," "start up," or "get up to speed on this project."
+**Does:** runs the session-start sequence, picks up a task assignment if one's queued, surfaces pending config updates and scaffolding gaps without reading either file in full, reads existing project context (with a rehydration short-circuit when `ORCHESTRATOR.md` is fresh), scaffolds agent files if the project is bare, and presents a summary for confirmation before doing any work.
+**Install:** `npx skills add seansmithworks/agent-skills --skill orchestrator-boot`
 
 ### /orchestrator-update
 
@@ -163,7 +172,7 @@ The gh cleanup skills are stack-agnostic. The wrap skills work without Linear or
 
 ## Install all skills
 
-All nine skills:
+All ten skills:
 
 ```bash
 npx skills add seansmithworks/agent-skills
