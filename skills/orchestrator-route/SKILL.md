@@ -9,6 +9,8 @@ version: 0.1.0
 
 `ORCHESTRATOR.md` is a **router**: current state plus pointers. It is not a store and not a log. When it is over cap it is because durable facts landed in it instead of in the file that owns them. The fix is routing, not pruning.
 
+**When Sean invokes this by name, that is the trigger — run it**, even under the size/staleness threshold. The "NOT for merely untidy" language in the description governs unprompted, autonomous firing only.
+
 Everything below is a boundary. The procedure is obvious and you already know it; these are the six things that get it wrong.
 
 ## ⛔ Gate 1 — Never evict by recency
@@ -53,9 +55,11 @@ grep -o '\[\[[^]]*\]\]' ORCHESTRATOR.md | sort -u | wc -l
 
 Verify by grep after the edit, not by reading the diff. A trap silently dropped in transit is invisible in a 40K diff.
 
+Where `ORCHESTRATOR.md` and the file it points to disagree on a fact, the target is authoritative — you are already reading both sides, so check. Correct the router; never silently carry the router's version forward.
+
 ## ⛔ Gate 5 — Commit a baseline first
 
-`git add <the file> && git commit` before any edit. There is no undo otherwise, and this is the highest-value state file in the project.
+A committed baseline must exist before any edit. If `git status` shows the file dirty, commit it first; if it's already clean, the existing commit is the baseline — don't force a no-op commit. There is no undo otherwise, and this is the highest-value state file in the project.
 
 **Then diff before you stage.** `git add <path>` takes every hunk in that path including a sibling session's uncommitted work. Run `git diff <path>` first and commit only your own hunks. A clean `git status` showing one file is not evidence the commit holds only your work.
 
@@ -67,7 +71,7 @@ Measure before and after:
 cat MEMORY.md mission.md general-agent-context.md agent-*.md ORCHESTRATOR.md | wc -c
 ```
 
-`ORCHESTRATOR.md` going down while the total stays flat means you moved bytes between always-read files (Gate 2 violation). Report both numbers or the run is unverified.
+Compare the boot-set drop to the file drop. A small gap is expected and correct — indexing extracted files in `MEMORY.md` costs a little, and that cost is the routing mechanism working, not leaked bytes. Treat it as a Gate 2 violation only when the boot-set drop is under half the file's drop — that means bytes moved to another always-read file instead of the on-demand tier. Report both numbers or the run is unverified.
 
 ## The target shape
 
