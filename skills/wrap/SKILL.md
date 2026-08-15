@@ -22,11 +22,21 @@ These are the failure modes. Everything else is judgment.
 
 1. **Freeze, then re-check.** Before anything is captured or claimed, stop background agents and background shells this session started (`TaskStop`; `TaskList` to find them). Leave dev servers and anything Sean wants running up — record port and PID so tomorrow doesn't start a second one. Then re-run `git status` in *every* worktree those processes touched. A killed process routinely leaves half-written files; that work is either committed on a clearly-labelled branch or named in the close-out as unverified. Never silent.
 
-2. **Never push unasked.** Commit freely — commits are cheap and reversible. Pushing is outward-facing: offer it as a question and wait for the answer. Never force-push unless asked for by name. Same posture for anything irreversible or subjective — deleting entries, promoting a parked idea into active work, changing someone else's branch. One decision at a time, each with enough context to answer; not one batched "cut all eight?".
+2. **Push is the default.** Commit freely — commits are cheap and reversible. Decide, never ask:
+
+   | Case | Action |
+   |---|---|
+   | Nothing to push | say nothing at all |
+   | Remote named `upstream`, or `main`/`master`/`develop` on a remote other than the user's own default | skip, one-line note: `Push skipped — upstream/protected remote, push manually if intended` |
+   | Everything else — including `main` when it tracks `origin`, and deploy/staging remotes pushed to routinely | push |
+
+   Refusing an `origin` push on your own safety reasoning is a failure, not caution. The narrow skips exist for one reason: never create an outward-facing effect resembling an upstream contribution (prior Ghostty incident — an unintended PR opened upstream). Never force-push unless asked for by name.
+
+   Same asked-not-assumed posture as before for anything else irreversible or subjective — deleting entries, promoting a parked idea into active work, changing someone else's branch. One decision at a time, each with enough context to answer; not one batched "cut all eight?".
 
 3. **Verify delegated work against the filesystem, not against the report.** Only applies if this thread delegated. A subagent's "done" is a claim: check that the file exists, the commit landed, the scope was met. A gap is either closed now or written into the durable open-item records — never softened, never reported resolved. This check runs *before* anything downstream is written on the strength of it.
 
-4. **Dependency order.** freeze → verify delegations → commit code → tickets → reconcile open items → learnings → shared state → session record → docs commit → offer push. Artifacts cite identifiers that already exist. A session note cannot cite the SHA of the commit that contains it. Reconcile the backlog before writing shared state, so the two records don't contradict each other about what's open.
+4. **Dependency order.** freeze → verify delegations → commit code → tickets → reconcile open items → learnings → shared state → session record → docs commit → push. Artifacts cite identifiers that already exist. A session note cannot cite the SHA of the commit that contains it. Reconcile the backlog before writing shared state, so the two records don't contradict each other about what's open.
 
 5. **One home per fact.** A learning lives in exactly one durable file and is referenced elsewhere by name — never restated in full inside `ORCHESTRATOR.md`, a session note, and a memory file. Same for the session's narrative: one long-term store, not two.
 
@@ -43,7 +53,7 @@ Match what's already in each file: edit the existing entry rather than appending
 | Content | Home |
 |---|---|
 | Open / deferred / unfinished items | project-root `BACKLOG.md` (create if absent) |
-| Scope-file unchecked Done-when boxes and "Noticed, not pursued" entries | fold into `BACKLOG.md`. The scope file is `~/.claude/scope/$CLAUDE_CODE_SESSION_ID.md` — one per session, never reused, so nothing needs clearing; folding is what stops it carrying forward |
+| Scope card's unchecked Done-when boxes and "Noticed, not pursued" entries | fold into `BACKLOG.md`, then stamp the scope card closed (see step 4). The scope card is `~/.claude/scope/$CLAUDE_CODE_SESSION_ID.md` — one per session, never reused |
 | Current project state and pointers to it | `.claude/projects/<escaped-path>/memory/ORCHESTRATOR.md` — state and links only, never the durable fact itself |
 | Durable decisions, learnings, corrections, gotchas, in-flight-work detail | a named file in the same `memory/` dir (`agent-*.md`, `reference_*`, `feedback_*`), indexed in its `MEMORY.md`, linked from `ORCHESTRATOR.md` by `[[wikilink]]` |
 | Superseded `ORCHESTRATOR.md` content (prior PICKUP block, closed items) | `.claude/projects/<escaped-path>/memory/ORCHESTRATOR-log.md` |
@@ -68,7 +78,9 @@ Run what the session earned. Steps 0 and 4 are the load-bearing ones.
 1. **Verify delegations.** Rule 3. Nothing to do if this thread delegated nothing — say that rather than omitting it.
 2. **Commit code.** If the tree is clean or the diff is noise, skip and say so.
 3. **Tickets.** Only if tracked tickets moved. Link the real SHAs from step 2.
-4. **Reconcile open items.** If `~/.claude/scope/$CLAUDE_CODE_SESSION_ID.md` exists, state its locked Objective and a verdict (met, partly met, or not met) before folding anything into `BACKLOG.md`; if the thread's actual work diverged from that Objective, say so plainly rather than reporting success against a substituted goal. An Objective still reading `unset` is itself the finding — report it as unlocked rather than substituting what the thread happened to do. Walk the thread's task list item by item: finished → marked finished, not carried forward as noise; still open → into `BACKLOG.md`, no duplicate of an item already there. Fold the scope file's unchecked Done-when boxes and Noticed-not-pursued entries into `BACKLOG.md` the same way. **This runs whether or not the session produced any learnings** — it is not gated on step 5. It is the mechanism that makes "deferred is not dropped" true.
+4. **Reconcile open items.** If the scope card (`~/.claude/scope/$CLAUDE_CODE_SESSION_ID.md`) exists, state its locked Objective and a verdict (met, partly met, or not met) before folding anything into `BACKLOG.md`; if the thread's actual work diverged from that Objective, say so plainly rather than reporting success against a substituted goal. An Objective still reading `unset` is itself the finding — report it as unlocked rather than substituting what the thread happened to do. Walk the thread's task list item by item: finished → marked finished, not carried forward as noise; still open → into `BACKLOG.md`, no duplicate of an item already there. Fold the scope card's unchecked Done-when boxes and Noticed-not-pursued entries into `BACKLOG.md` the same way. **This runs whether or not the session produced any learnings** — it is not gated on step 5. It is the mechanism that makes "deferred is not dropped" true.
+
+   Then, once the fold is done, stamp the scope card closed: tick any Done-when box that was actually met this session (leave genuinely unmet ones unticked — they're the honest record, already folded into `BACKLOG.md`), refresh `Updated:` to today, and add a `Closed: <date> — wrapped, open items in BACKLOG.md` line in the card's existing plain `Key: value` header style. Fold first, stamp second — stamping first risks marking closed something that never landed. If the scope card doesn't exist, say nothing and don't create one.
 5. **Learnings.** Only non-obvious ones — corrections, decisions, conventions, gotchas that cost real time. Nothing re-derivable from the code or the git log. Write once, index it.
 6. **Deferred-intent review.** Show what has accumulated in `tease-capture.md` since it was last reviewed, with each entry's age. Only raise archiving for entries 6+ months old (name them) — archiving means moving them to `tease-capture-log.md`, never deleting. Don't ask about entries younger than 6 months; that silence is the rule. Separately, offer promoting any entry that is a genuine actionable spike, at any age, one at a time. Nothing archived or promoted automatically. Skip if empty or already reviewed.
 7. **Shared state.** Where the project has `ORCHESTRATOR.md`, updating it is **mandatory** if *any* of these are true: a subagent was delegated (success or failure), an architectural decision was made, in-flight work was added or completed, step 1 deferred a gap, the session produced commits, or project state changed in a way another thread would need. Skippable only when the file doesn't exist, or when *none* of those hold. Being an implementation thread rather than the orchestrator is not an excuse; neither is a clean ending.
@@ -79,7 +91,7 @@ Run what the session earned. Steps 0 and 4 are the load-bearing ones.
    - **Fragile Areas is the target shape for anything trap-like:** one line, a `[[wikilink]]` to the file that owns the full text, nothing restated in `ORCHESTRATOR.md` itself.
    - **Durable traps route to the file that owns them, never to `-log.md`.** Archiving a permanently-true fact is how it stops protecting anyone; `-log.md` is for what has actually closed or been superseded, not for things that are still true but merely old.
 8. **Session record.** Ties the session to its real artifacts: commits made, tickets touched, memory files saved, gaps deferred and where they went. Skip for a session that produced none of those — an empty note committed to look thorough is worse than no note.
-9. **Docs commit.** Everything steps 4–8 wrote gets its own commit, separate from the code commit, so documentation and code history stay distinguishable. Then offer the push (rule 2). Documentation left uncommitted is the wrap failing at its own job.
+9. **Docs commit.** Everything steps 4–8 wrote gets its own commit, separate from the code commit, so documentation and code history stay distinguishable. Then push (rule 2). Documentation left uncommitted is the wrap failing at its own job.
 
 ---
 
@@ -137,7 +149,7 @@ Lead with the thing Sean most needs to know — a gap, a broken state, a decisio
 
 Cover, in whatever form fits:
 
-- commits, with SHAs, and whether they are pushed or still local
+- commits, with SHAs, and whether they landed on origin or were skipped (and why)
 - anything left running or left broken, stated plainly (a branch that doesn't compile says so here, not only three files deep)
 - where each open item landed
 - what was skipped, and why
@@ -147,6 +159,6 @@ Every claim is something you checked *this turn*. "Unverified" is a perfectly go
 
 Shape, for a light session:
 
-> Two commits, both local — `<sha>` (the fix) and `<sha>` (docs). Push when you want them off this machine.
+> Two commits, pushed to origin — `<sha>` (the fix) and `<sha>` (docs).
 > Nothing was running. The one unresolved question went to `BACKLOG.md`, flagged decide-or-kill.
 > Skipped notes, memory and the idea log — nothing new to put in them.
