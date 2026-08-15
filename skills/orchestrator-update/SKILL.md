@@ -1,21 +1,8 @@
 ---
 name: orchestrator-update
-description: Review and apply pending orchestrator config updates. Use when you run "/orchestrator:update", "check pending updates", or on session start if the registry has entries you haven't reviewed. Surfaces improvements from `~/.claude/PENDING-UPDATES.md`, applies selected ones via subagents, and validates with your eval suite.
-license: MIT
-metadata:
-  version: 1.0.0
-  category: workflow
-  domain: orchestrator
-  status: stable
-  platforms: All
-keywords:
-  - orchestrator
-  - config
-  - update
-  - maintenance
-  - orca
-  - pending
-  - registry
+description: Review and apply pending orchestrator config updates. Use when the user says "/orchestrator:update", "check pending updates", or on session start if the registry has pending entries. Surfaces improvements from `~/.claude/PENDING-UPDATES.md`, applies selected ones via subagents, and validates with the eval suite.
+allowed-tools: Read, Write, Edit, Bash, Glob, Agent, Skill
+version: 0.2.0
 ---
 
 # /orchestrator:update
@@ -61,8 +48,8 @@ Options:
 
 Before applying anything:
 
-- Run your tokenize script (e.g., `python3 ~/.claude/evals/tokenize.py`) — save output as baseline. This measures token counts for the auto-loaded context layers (global CLAUDE.md, global MEMORY.md, orchestrator-prompt.md, project CLAUDE.md). If you don't have an eval suite yet, manually record token counts via the Claude Code `/tokens` command.
-- Run your behavioral smoke test (e.g., spawn a subagent that reads your config and predicts outcomes for a set of test prompts) — save as baseline.
+- Run the tokenize script: `python3 ~/.claude/evals/tokenize.py` — save output as baseline. This measures token counts for the auto-loaded context layers (global CLAUDE.md, global MEMORY.md, orchestrator-prompt.md, project CLAUDE.md).
+- Run the 8-test behavioral suite from `~/.claude/evals/orchestrator-smoke-test.md` (spawn a subagent that reads the config + predicts outcomes for all 8 tests) — save as baseline.
 - This step cannot be skipped. A session that applies changes without a baseline has no signal on regressions.
 
 ### Step 4 — Apply
@@ -77,10 +64,10 @@ For each selected entry:
 
 After all selected entries applied:
 
-- Re-run your tokenize script — save output as post-apply result.
-- Re-run your behavioral smoke test — save as post-apply result.
+- Re-run `python3 ~/.claude/evals/tokenize.py` — save output as post-apply result.
+- Re-run the 8-test behavioral suite from `~/.claude/evals/orchestrator-smoke-test.md` — save as post-apply result.
 - Compare to baselines and produce a delta report. Format: `MEMORY.md: 1,652 → N tokens (±delta). Behavioral: N/8 PASS.`
-- **If behavioral suite shows regressions:** surface them with HIGH visibility (e.g., `⚠ REGRESSION: Test 3 DESIGN.md awareness — was PASS, now FAIL`). Do NOT silently apply. You retain override authority — if you confirm, proceed. If unconfirmed, hold and explain what regressed.
+- **If behavioral suite shows regressions:** surface them with HIGH visibility (e.g., `⚠ REGRESSION: Test 3 DESIGN.md awareness — was PASS, now FAIL`). Do NOT silently apply. The user retains override authority — if they confirm, proceed. If unconfirmed, hold and explain what regressed.
 - This step cannot be skipped. The eval is non-bypassable by design.
 
 ### Step 6 — Update registry
@@ -91,7 +78,7 @@ For each applied entry:
 - Append a `**Actual eval delta:** [numbers]` line
 - If delta is worse than expected, add a `**Caveat:**` line
 
-### Step 7 — Report
+### Step 7 — Report to Sean
 
 Summary:
 
@@ -108,7 +95,7 @@ When adding a new pending entry during a session:
 1. It must tie to output quality OR token/context cost
 2. It must specify an `Expected eval delta` in measurable terms
 3. It must specify which eval test to run for validation
-4. If any of these is missing, it doesn't belong in the registry — file as a ticket instead
+4. If any of these is missing, it doesn't belong in the registry — file as a Linear issue instead
 
 ## Prune mode
 
@@ -121,10 +108,10 @@ When adding a new pending entry during a session:
 
 - Never auto-apply entries. Always require explicit user selection.
 - Always run baseline + post-apply evals. A skipped eval is not permitted.
-- Commit nothing on behalf of the user — this skill edits personal config files (`~/.claude/`), which is typically not a git repo. Manage its backup separately.
+- Commit nothing on behalf of the user — this skill edits personal config files (`~/.claude/`), which is not a git repo. Manage its backup separately.
 
 ## Files touched
 
 - Read: `~/.claude/PENDING-UPDATES.md`, `~/.claude/evals/*` (baseline + running evals)
-- Write: `~/.claude/PENDING-UPDATES.md` (status updates), eval result files
+- Write: `~/.claude/PENDING-UPDATES.md` (status updates), `~/.claude/evals/*-<date>-*.md` (new eval results)
 - Edit via subagent dispatch: whichever files the selected entries name in their "Blast radius"

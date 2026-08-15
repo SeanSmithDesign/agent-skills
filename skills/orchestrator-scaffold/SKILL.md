@@ -1,23 +1,8 @@
 ---
 name: orchestrator-scaffold
-description: Scaffold missing project files via three modes. Use when you say "/orchestrator:scaffold", "scaffold this project", "set up agent files", "create grounding files", "add mission brand principles", or when Phase 1 boot check surfaces missing scaffolding. Three modes — default (auto-detect), lifecycle (v2.1 agent files), grounding (v2.2 mission/brand/principles interview).
-license: MIT
-metadata:
-  version: 1.0.0
-  category: workflow
-  domain: orchestrator
-  status: stable
-  platforms: All
-keywords:
-  - orchestrator
-  - scaffold
-  - agent
-  - mission
-  - brand
-  - principles
-  - lifecycle
-  - grounding
-  - orca
+description: Scaffold missing project files via three modes. Use when the user says "/orchestrator:scaffold", "scaffold this project", "set up agent files", "create grounding files", "add mission brand principles", or when Phase 1 boot check surfaces missing scaffolding. Three modes — default (auto-detect), lifecycle (v2.1 agent files), grounding (v2.2 mission/brand/principles interview).
+allowed-tools: Read, Write, Edit, Bash, Glob, Agent, Skill
+version: 0.3.0
 ---
 
 # /orchestrator:scaffold — Project Scaffolding
@@ -38,7 +23,7 @@ Triggered by: bare `/orchestrator:scaffold`
 
 1. Read `~/.claude/projects/SCAFFOLDING.md` to find the project's recorded version.
 2. Identify the current project from cwd — derive the project name from the directory name. Match against the registry table. If not found, treat as v0.
-3. Derive the memory dir path: replace `/` with `-` and spaces with `-` in the full path, prepend nothing. Example: `/Users/you/Code/MyProject/` → `~/.claude/projects/-Users-you-Code-MyProject/memory/`.
+3. Derive the memory dir path: replace `/` with `-` and spaces with `-` in the full path, prepend nothing. Example: `~/Code/my-app/` → `~/.claude/projects/-Users-yourname-Code-my-app/memory/`.
 4. Run the presence check (see Detection Logic section):
    - Check project root for: `CLAUDE.md`, `DESIGN.md`, `mission.md`, `brand.md`, `principles.md`
    - Check memory dir for: `agent-product.md`, `agent-experience.md`, `agent-craft.md`, `agent-build.md`, `agent-data.md`, `agent-quality.md`, `general-agent-context.md`
@@ -59,9 +44,9 @@ Triggered by: bare `/orchestrator:scaffold`
 ```
 
 6. Wait for the user's selection, then run the corresponding mode.
-7. If the project is not in SCAFFOLDING.md: treat as v0. Before doing anything, ask: "Is this an active project with continuity, or an experiment / scratch work? Grounding files only pay off on projects you'll be compacting for weeks."
+7. If the project is not in SCAFFOLDING.md: treat as v0. Before doing anything, ask: "Is this an active project with continuity, or an experiment / scratch work? Grounding files only pay off on projects you'll be compacting for weeks." Wait for the user's answer before proceeding.
 
-> **Grounding-first in "both" mode is LOCKED.** When the user selects "both", MUST run grounding first, then lifecycle. mission.md must exist before lifecycle agent files generate — they need it to produce non-generic content.
+> **Grounding-first in "both" mode is LOCKED.** When the user selects "both", MUST run grounding first, then lifecycle. Mission.md must exist before lifecycle agent files generate — they need it to produce non-generic content.
 
 ---
 
@@ -75,9 +60,9 @@ Mechanical scaffold of the six core lifecycle agent files using project-specific
 
 1. **Check for mission.md.** Look at project root and memory dir. If missing: halt with — _"Lifecycle agents need a mission to be useful. Run `/orchestrator:scaffold grounding` first, or tell me: what are you building and who is it for? I'll draft a mission.md from your answer."_ Do NOT proceed without a mission. This is a MUST stop, not a suggestion.
 
-2. **Check for existing agent files.** If any of the six agent files already exist in the memory dir: read each one, tell the user which exist, and ask — "These files already exist. Overwrite, skip individual files, or cancel?" MUST NOT overwrite without explicit confirmation.
+2. **Check for existing agent files.** If any of the six agent files already exist in the memory dir: read each one, report which exist, and ask — "These files already exist. Overwrite, skip individual files, or cancel?" MUST NOT overwrite without explicit confirmation.
 
-3. **Check for legacy v1 files.** If `agent-frontend.md`, `agent-backend.md`, `agent-api.md`, `agent-design.md`, or `agent-mobile.md` exist in the memory dir: surface the migration table before generating new files. Do not auto-rename or delete old files — surface the migration plan and wait for go-ahead.
+3. **Check for legacy v1 files.** If `agent-frontend.md`, `agent-backend.md`, `agent-api.md`, `agent-design.md`, or `agent-mobile.md` exist in the memory dir: surface the migration table before generating new files (see migration table in `reference_orchestrator-scaffolding-guide.md`). Do not auto-rename or delete old files — surface the migration plan and wait for the user's go-ahead.
 
 4. **Explore the codebase.** Dispatch an Explore subagent (T2 Sonnet) to map the project:
    - File inventory with one-line purposes
@@ -90,7 +75,7 @@ Mechanical scaffold of the six core lifecycle agent files using project-specific
 5. **Dispatch 6 parallel draft subagents** (T2 Sonnet), one per role: product, experience, craft, build, data, quality. Each subagent receives:
    - mission.md content
    - Explore report scoped to its domain
-   - Full lifecycle role definition and domain boundaries from the lifecycle roles guide in your memory dir
+   - Full lifecycle role definition and domain boundaries from `reference_orchestrator-scaffolding-guide.md`
    - Target: 80–150 lines per file, mandatory Gotchas section, cross-references instead of duplicated content
    - No token tables outside agent-craft.md — build references craft
 
@@ -124,7 +109,7 @@ Mechanical scaffold of the six core lifecycle agent files using project-specific
 
 Triggered by: `/orchestrator:scaffold grounding`
 
-Interview-driven flow. The three files are the user's voice and product thinking — not boilerplate. Interview first, draft, confirm, then write. The sequence is one-file-at-a-time.
+Interview-driven flow. The three files capture the user's voice and product thinking — not boilerplate. Interview first, draft, confirm, then write. The sequence is one-file-at-a-time.
 
 #### Steps
 
@@ -138,7 +123,7 @@ Interview-driven flow. The three files are the user's voice and product thinking
 3. **Run the interview file-by-file** (see Interview Flow section). For each file:
    a. Ask the interview questions for that file
    b. Draft the file from the user's answers
-   c. Show the draft
+   c. Show the draft to Sean
    d. Iterate once if needed — one revision round, not a negotiation loop
    e. Confirm ("Does this look right? I'll write it to disk on your go-ahead.")
    f. **MUST wait for explicit confirmation before writing.** No-write-until-confirmed is a hard rule, not a suggestion. If the user abandons mid-interview, write nothing to disk.
@@ -165,7 +150,7 @@ Interview-driven flow. The three files are the user's voice and product thinking
    git commit -m "add v2.2 grounding layer (mission, brand, principles)"
    ```
 
-> **Tone during interview:** Direct questions, not forms. Think in situations and use-cases, not demographic segments or frameworks. Lead with moments and concrete examples. Do not use jargon: "persona," "value proposition," "positioning statement," "north star metric."
+> **Tone during interview:** Direct questions, not forms. Lead with moments and concrete examples — users think in situations and use-cases, not demographic segments or frameworks. Do not use jargon: "persona," "value proposition," "positioning statement," "north star metric."
 
 ---
 
@@ -181,8 +166,8 @@ read ~/.claude/projects/SCAFFOLDING.md
 recorded_version = row["version"]  # e.g. "v2.2", "v2.1", "v0"
 
 derive memory_dir:
-  full_path = expand(cwd)             # e.g. /Users/you/Code/MyProject
-  slug = full_path.replace("/", "-").replace(" ", "-")  # -Users-you-Code-MyProject
+  full_path = expand(cwd)           # e.g. /Users/yourname/Code/my-app
+  slug = full_path.replace("/", "-").replace(" ", "-")  # -Users-yourname-Code-my-app
   memory_dir = "~/.claude/projects/" + slug + "/memory/"
 
 check disk:
@@ -228,11 +213,11 @@ Quality bar: specific enough to be a filter, honest about what it's not, short e
 
 Questions to ask (in order, conversationally):
 
-1. "Who opens this — what's the situation they're in when they reach for it?" Push toward a moment, not a demographic.
+1. "Who opens this — what's the situation they're in when they reach for it?" Push toward a moment, not a demographic. "A developer who's been procrastinating for an hour" beats "25–40-year-old knowledge worker."
 2. "What's the one thing it does that makes the difference?" Looking for the core mechanism, not the category.
 3. "What would someone say or do differently after using this for a month — in concrete terms?" Measurable outcome, not feature coverage.
 4. "What is this definitely not — what have you already ruled out?" Anti-goals are often more useful than goals.
-5. "Where is it right now — are you exploring, building, shipping, or maintaining?" Stage shapes what agent files prioritize.
+5. "Where is it right now — exploring, building, shipping, or maintaining?" Stage shapes what agent files prioritize.
 
 ### brand.md — 5-6 questions
 
@@ -240,12 +225,12 @@ Quality bar: concrete enough to govern a single line of microcopy. Target: 250�
 
 Questions to ask:
 
-1. "If this product were a person, what's the one-sentence personality — and what are they definitely not?"
+1. "If this product were a person, what's the one-sentence personality — and what are they definitely not?" The barista framing in Brukas came from exactly this kind of question.
 2. "Give me a line it would say in its best moment, and a line it would never say." Concrete examples beat adjective lists.
 3. "What's the tone at the emptiest, most inviting moment — before the user has done anything?" Empty states reveal personality more than any other surface.
 4. "What's the tone when something goes wrong — error, couldn't connect, failure?" Error tone reveals how the product treats people under pressure.
 5. "What's the single biggest thing this product should never sound like?" Anti-tones — the "no" is usually sharper than the "yes."
-6. (Optional) "Are there surfaces where the tone shifts significantly — like active use vs. setup?"
+6. (Optional) "Are there surfaces where the tone shifts significantly — like active use vs. setup?" Brukas example: "Timer running → gone. The app recedes."
 
 ### principles.md — 5-6 questions
 
@@ -253,24 +238,26 @@ Quality bar: structured as Always/Never/When-in-doubt, actionable enough that a 
 
 Questions to ask:
 
-1. "What are 2-3 things this product always does — non-negotiable, even when it's inconvenient?"
-2. "What has it never done and must never do — even if a user asks?"
-3. "When a subagent has two valid paths and no obvious winner — what's the tiebreaker?" The "when in doubt" rules.
+1. "What are 2-3 things this product always does — non-negotiable, even when it's inconvenient?" System dark mode, touch targets, no guilt for missed sessions — constraints that stay even when skipping would be faster.
+2. "What has it never done and must never do — even if a user asks?" Streaks, leaderboards, social features — you probably have strong opinions here.
+3. "When a subagent has two valid paths and no obvious winner — what's the tiebreaker?" The "when in doubt" rules. Brukas: "less UI. Defer to iOS muscle memory. Slower is wrong."
 4. "Is there a specific technical or UX decision that's been made and should never be reopened?" Named-and-closed decisions prevent zombie debates.
-5. "Are there any a11y or platform-native behaviors that are non-negotiable?"
+5. "Are there any a11y or platform-native behaviors that are non-negotiable?" Honor Dynamic Type, 44pt minimums — these don't make it into principles without being said explicitly.
 6. (Optional) "Is there anything the product did in a past version that you've removed and want to keep removed?" Good for projects with history. Prevents regression of deliberate cuts.
 
 ---
 
 ## File Templates
 
-Do not generate from scratch — use your own exemplar files as the quality and structure bar. Each file MUST close with a "How to apply" section that tells a subagent when to pull this file in. Files without this section are documentation, not decision tools.
+Do not generate from scratch — the exemplar files are the templates. Use these as the quality and structure bar.
 
 - **mission.md:** ~200 words, sections: why / who / promise / anti-goals / how to apply
 - **brand.md:** ~300 words, sections: voice / character / tone calibration per state / what it's not / how to apply
 - **principles.md:** ~330 words, sections: always / never / when in doubt / how to apply
 
-For lifecycle agent files: use the role definitions and domain boundaries in the lifecycle roles guide from your memory dir as the structural template.
+Each file MUST close with a "How to apply" section that tells a subagent when to pull this file in. Files without this section are documentation, not decision tools.
+
+For lifecycle agent files: use the role definitions, domain boundaries table, and scoping rules in `reference_orchestrator-scaffolding-guide.md` as the structural template.
 
 ---
 
@@ -280,9 +267,9 @@ Three tunable decisions deferred to first-run. Sensible defaults are below — r
 
 **Quick interview mode:** NOT included. Full interview only (4-6 questions per file). If you want a "quick" mode (2-3 questions, shorter drafts) for early-stage projects, add it on request. The full interview is the right investment for any project you'll be compacting for weeks.
 
-**Refresh granularity:** Full-file refresh only. When a file already exists and you want to update it, the skill re-runs the full interview for that file and produces a new draft. Section-level edits (e.g., "just update the anti-goals section") are handled via direct request, not via this skill.
+**Refresh granularity:** Full-file refresh only. When a file already exists and you want to update it, the skill re-runs the full interview for that file and produces a new draft. Section-level edits (e.g., "just update the anti-goals section") are handled via direct user request, not via this skill. Simpler to implement; edge cases for partial rewrites are subtle.
 
-**Commit reminder:** Prominent reminder in output, but no hard stop. The skill ends with an explicit "commit these N files when ready" block with copy-pasteable git commands. Does not gate on confirmation — the reminder is the responsibility transfer.
+**Commit reminder:** Prominent reminder in output, but no hard stop. The skill ends with an explicit "commit these N files when ready" block with copy-pasteable git commands. Does not gate on confirmation that Sean will commit — that would be annoying for experienced sessions. The reminder is the responsibility transfer.
 
 ---
 
@@ -292,15 +279,15 @@ Three tunable decisions deferred to first-run. Sensible defaults are below — r
 
 **Project already at target version (idempotency):** Report "already at v2.2 — nothing to generate." Offer: "Want to refresh a specific file? (mission / brand / principles / agent-[role])" — re-runs the interview for that file alone, overwrites with confirmation.
 
-**User abandons interview mid-flow:** MUST write nothing to disk. The skill has no partial-write behavior. Nothing lands on disk until each file's draft is confirmed. If the user says "pause" or "save where we are," write a `draft-<filename>.md` in the project root clearly labeled `DRAFT — NOT FINAL`, only if explicitly asked.
+**User abandons interview mid-flow:** MUST write nothing to disk. The skill has no partial-write behavior. Nothing lands on disk until the user confirms each file's draft. If the user says "pause" or "save where we are," write a `draft-<filename>.md` in the project root clearly labeled `DRAFT — NOT FINAL`, only if explicitly asked.
 
 **Files already exist with content:** MUST read first. MUST ask before overwriting — for each file individually. The question: "mission.md already exists — review and iterate, replace from scratch, or skip?" Overwriting without asking is forbidden. Applies to all three grounding files and all six lifecycle agent files.
 
-**Project at v0, scratch, or experiments folder:** MUST ask before doing anything. "This looks like a new or experimental project. Grounding files are designed for projects with at least a few weeks of continuity. Worth it here, or skip?" For confirmed experiments, offer lifecycle-only scaffolding (useful even short-term) or exit cleanly.
+**Project at v0, scratch, or \_experiments/:** MUST ask before doing anything. "This looks like a new or experimental project. Grounding files are designed for projects with at least a few weeks of continuity. Worth it here, or skip?" For confirmed experiments, offer lifecycle-only scaffolding (useful even short-term) or exit cleanly.
 
-**Legacy v1 projects (old-style agent files present):** Detect ad-hoc filenames: `agent-frontend.md`, `agent-backend.md`, `agent-api.md`, `agent-design.md`, `agent-mobile.md`, `agent-testing.md`, `agent-qa.md`. Surface the migration plan before generating new lifecycle files. Do NOT auto-rename or delete old files — tell the user the migration plan and wait for go-ahead. Never silently remove v1 files.
+**Legacy v1 projects (old-style agent files present):** Detect ad-hoc filenames: `agent-frontend.md`, `agent-backend.md`, `agent-api.md`, `agent-design.md`, `agent-mobile.md`, `agent-testing.md`, `agent-qa.md`. Surface the migration table from `reference_orchestrator-scaffolding-guide.md` before generating new lifecycle files. Do NOT auto-rename or delete old files — surface the migration plan and wait for the user's go-ahead. Never silently remove v1 files.
 
-**Git repo not detected at project root:** Note that grounding files will be written but are not yet tracked by git. Tell the user: "No .git found — these files won't be version-controlled until you initialize a repo or move them into one."
+**Git repo not detected at project root:** Note that grounding files will be written but are not yet tracked by git. Tell Sean: "No .git found — these files won't be version-controlled until you initialize a repo or move them into one."
 
 ---
 
@@ -322,7 +309,7 @@ The skill handles these steps before closing:
 
 ## Notes on Path Derivation
 
-The memory dir path formula: take the absolute path (e.g., `/Users/you/Code/MyProject`), replace all `/` with `-` and all spaces with `-`. Do NOT strip the leading `/` — it becomes the leading `-`. Result: `-Users-you-Code-MyProject`. Memory dir: `~/.claude/projects/-Users-you-Code-MyProject/memory/`.
+The memory dir path formula: take the absolute path (e.g., `/Users/yourname/Code/my-app`), replace all `/` with `-` and all spaces with `-`. Do NOT strip the leading `/` — it becomes the leading `-`. Result: `-Users-yourname-Code-my-app`. Memory dir: `~/.claude/projects/-Users-yourname-Code-my-app/memory/`.
 
 **Verify before writing.** Always run `ls ~/.claude/projects/ | grep <project-name-fragment>` before writing to confirm the actual dir name on disk. Path derivation is deterministic but dirs created by different Claude Code versions may have edge-case variants. Disk is truth; derivation is a starting guess.
 
