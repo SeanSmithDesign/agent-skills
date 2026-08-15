@@ -62,7 +62,7 @@ Under time pressure this section is the *only* thing that gets cut. Never the co
 
 ## 4. Reconcile the ledger — always runs, even when capture is skipped
 
-State the thread's **locked objective** in one line. Then walk every item in the task ledger:
+State the thread's **locked objective** in one line. If `scope.md` exists in the memory dir, refresh its last-touched date, tick any Done-when box that's now met, and add anything newly out of scope under "Noticed, not pursued." Scope is capped at one screen; once it exceeds that it has become a plan, and the overflow moves to `BACKLOG.md`, not scope.md. Then walk every item in the task ledger:
 
 - Done → marked complete, not carried.
 - Open → recorded in the project-root `BACKLOG.md` (create if absent; append under a dated heading in the file's existing style; never duplicate an item already listed). Label each as *carried* or *parked* so a carried item does not read as duplicate parking. BACKLOG.md is the durable record that survives the wipe — the pickup prompt is lossy by design and must never be an item's only record.
@@ -76,7 +76,7 @@ Always produced — it is the point of the exercise. Nothing uncommitted and not
 
 Compact — sized for a fast re-read, not a report. 150–350 words is the target range per `~/.claude/BREVITY.md` — over range means reorder, deduplicate, or demote, never cut something load-bearing. Default to bullets. It carries only:
 
-- What is being built (one sentence).
+- What is being built (one sentence). If `scope.md` exists, its Objective line and unchecked Done-when boxes go here verbatim, so the next thread inherits the lock instead of re-deriving it.
 - Where it stands, with the exact committed state (branch + SHA).
 - The specific immediate next action — actionable, on-objective. "Continue the work" is a failure.
 - Non-obvious context the codebase cannot supply: constraints, decisions, gotchas, conclusions already reached (say *don't re-derive X* — that carries the answer without the tokens that caused the reset).

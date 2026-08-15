@@ -25,8 +25,10 @@ Triggered by: bare `/orchestrator:scaffold`
 2. Identify the current project from cwd — derive the project name from the directory name. Match against the registry table. If not found, treat as v0.
 3. Derive the memory dir path: replace `/` with `-` and spaces with `-` in the full path, prepend nothing. Example: `~/Code/my-app/` → `~/.claude/projects/-Users-yourname-Code-my-app/memory/`.
 4. Run the presence check (see Detection Logic section):
-   - Check project root for: `CLAUDE.md`, `DESIGN.md`, `mission.md`, `brand.md`, `principles.md`
-   - Check memory dir for: `agent-product.md`, `agent-experience.md`, `agent-craft.md`, `agent-build.md`, `agent-data.md`, `agent-quality.md`, `general-agent-context.md`
+   - Check project root for: `CLAUDE.md`, `DESIGN.md`, `mission.md`, `brand.md`, `principles.md`, `BACKLOG.md`
+   - Check memory dir for: `agent-product.md`, `agent-experience.md`, `agent-craft.md`, `agent-build.md`, `agent-data.md`, `agent-quality.md`, `general-agent-context.md`, `scope.md`
+
+   `BACKLOG.md` and `scope.md` don't gate version or need the interview: create an empty stub silently if missing, never overwrite an existing one. `BACKLOG.md` starts with a bare top heading. `scope.md` starts from the one-screen template (Objective, Done when, In scope, Out of scope, Noticed not pursued, Thread) and is expected to be absent or empty between threads. If `scope.md` is present and over one screen, note it as drift; it has become a plan and belongs in a durable doc instead.
 5. Present gap report:
 
 ```
@@ -153,6 +155,32 @@ Interview-driven flow. The three files capture the user's voice and product thin
 > **Tone during interview:** Direct questions, not forms. Lead with moments and concrete examples — users think in situations and use-cases, not demographic segments or frameworks. Do not use jargon: "persona," "value proposition," "positioning statement," "north star metric."
 
 ---
+
+## What a scaffolded project looks like
+
+```
+project-root/
+  CLAUDE.md
+  DESIGN.md          (UI projects)
+  mission.md
+  brand.md
+  principles.md
+  BACKLOG.md         (open/deferred items, resurfaces at wrap)
+
+~/.claude/projects/<path>/memory/
+  ORCHESTRATOR.md
+  MEMORY.md
+  scope.md            (thread-level, hours to days, not committed to git)
+  agent-product.md
+  agent-experience.md
+  agent-craft.md
+  agent-build.md
+  agent-data.md
+  agent-quality.md
+  general-agent-context.md
+```
+
+Project-root files travel with the code and are committed. Memory-dir files are private, uncommitted, and can churn hourly (`scope.md`) or grow over months (`ORCHESTRATOR.md`).
 
 ## Detection Logic
 
