@@ -81,7 +81,8 @@ Compact — sized for a fast re-read, not a report. 150–350 words is the targe
 - The specific immediate next action — actionable, on-objective. "Continue the work" is a failure.
 - Non-obvious context the codebase cannot supply: constraints, decisions, gotchas, conclusions already reached (say *don't re-derive X* — that carries the answer without the tokens that caused the reset).
 - Anything a stopped agent left behind, named as **unverified**. Anything left running, with how to reuse it.
-- `Working directory:` as an **absolute path** (`/Users/seansmith/Code/...`), not a tilde.
+- `Working directory:` as an **absolute path** (`/Users/seansmith/Code/...`), not a tilde. If the session is in a worktree, this is the worktree's path, not the main tree's.
+- **Worktree carry-forward.** Detect with `git rev-parse --git-dir` vs `git rev-parse --git-common-dir` — if they differ, the session is in a worktree. Get its name with `basename "$(git rev-parse --show-toplevel)"`. When in a worktree, name it inline in the block (e.g. `Worktree: <name>`) so the next thread has it as context. When not in a worktree, say nothing — no "not in a worktree" line.
 
 **Render it inline in the response, in a single fenced block, and put every heading, label and instruction to the user *outside* the fence.** Anything inside the fence gets pasted into the next thread; a stray `## Pickup prompt` heading or a slash command inside it lands as garbage there. That block is the primary deliverable — the user must be able to see it, scroll back, and re-copy it.
 
@@ -93,11 +94,37 @@ Compact — sized for a fast re-read, not a report. 150–350 words is the targe
 
 A full box would need every line padded to a fixed width, which breaks on long paths and wraps badly in narrow terminals — a bare rule is the ceiling. These delimiter lines are inside the fence and get pasted into the next thread along with everything else; that is intended, not noise, and they must not be stripped as cleanup.
 
-**Order inside the fence is fixed:** opening fence → top delimiter → `Thread:` line (when present) → body → recap instruction (below) → bottom delimiter → closing fence.
+**Lead the block with the wordmark below.** It is a marker, not content, and is exempt from the 150–350 word target the same way `/wrap`'s banner is exempt from its close-out's word target. Its first line *is* the top delimiter and its last line *is* the bottom delimiter — do not add a second top delimiter above it. Reproduce it exactly, including trailing spaces on the frame lines; they are load-bearing for alignment. It reads WRAP / CONT / INUE — CONTINUE deliberately breaks across two rows because the mark does what the skill does, so do not "fix" the break:
+
+```
+────────────────────────────────────────────────────────────
+           ╭───────────────────────────────────╮            
+           │ __        ______      _    ____   │            
+           │ \ \      / /  _ \    / \  |  _ \  │            
+           │  \ \ /\ / /| |_) |  / _ \ | |_) | │            
+           │   \ V  V / |  _ <  / ___ \|  __/  │            
+           │    \_/\_/  |_| \_\/_/   \_\_|     │            
+           │   ____ ___  _   _ _____           │            
+           │  / ___/ _ \| \ | |_   _|          │            
+           │ | |  | | | |  \| | | |            │            
+           │ | |__| |_| | |\  | | |            │            
+           │  \____\___/|_| \_| |_|            │            
+           │  ___ _   _ _   _ _____            │            
+           │ |_ _| \ | | | | | ____|           │            
+           │  | ||  \| | | | |  _|             │            
+           │  | || |\  | |_| | |___            │            
+           │ |___|_| \_|\___/|_____|           │            
+           ╰───────────────────────────────────╯            
+────────────────────────────────────────────────────────────
+```
+
+**Order inside the fence is fixed:** opening fence → wordmark (whose first line is the top delimiter) → `Thread:` line (when present) → body → recap instruction (below) → bottom delimiter → closing fence.
 
 **End the block with a recap gate, addressed to the next thread, not to Sean.** The last line inside the fence, before the bottom delimiter, instructs the next thread: before taking any action, state back in a few lines what it understands the objective to be and what it is about to do first, then wait for confirmation — not a full plan, an alignment check sized so Sean can confirm or correct in one reply. This is a gate the next thread waits on, not a recap it narrates while already working. It stays inside the fence, as the final line of the block, so it survives the paste — moving it outside the fence defeats the point.
 
 **Thread name.** `jq -r '[.nameSource, .name] | @tsv' ~/.claude/sessions/$CLAUDE_PID.json 2>/dev/null`. Carry it forward only if `nameSource` is `user`. If it is `derived`/`auto`, or the file or `jq` is missing, skip in silence — an auto slug like `code-55` carries no signal and must never be surfaced as though it did. When a user-set name exists: put `Thread: <name>` as the line inside the block immediately following the top delimiter (see ordering above; prose, not a command), and below the block, outside it, give the working mechanism — `type /rename "<name>" in the new thread (or launch it as claude -n "<name>")`. `/rename` only fires as an entire message, so it cannot live in the paste.
+
+**Worktree relaunch command.** When the session is in a worktree (detected above), give the exact relaunch command below the block, outside it, alongside the `/rename` guidance — it is an instruction to Sean about how to launch, not text for the next agent: `cd <repo> && claude -w <name>`. This re-enters the named worktree rather than triggering the zsh collision guard's fresh isolation. Skip in silence when not in a worktree.
 
 **Clipboard** (convenience, best-effort, never a blocker):
 
