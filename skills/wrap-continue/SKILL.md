@@ -62,7 +62,7 @@ Under time pressure this section is the *only* thing that gets cut. Never the co
 
 ## 4. Reconcile the ledger — always runs, even when capture is skipped
 
-State the thread's **locked objective** in one line. If `scope.md` exists in the memory dir, refresh its last-touched date, tick any Done-when box that's now met, and add anything newly out of scope under "Noticed, not pursued." Scope is capped at one screen; once it exceeds that it has become a plan, and the overflow moves to `BACKLOG.md`, not scope.md. Then walk every item in the task ledger:
+State the thread's **locked objective** in one line, but first check it still describes what the thread is actually doing; if it has drifted, say so at the handoff and carry the corrected objective forward instead of the stale one. If `scope.md` exists in the memory dir, refresh its last-touched date, tick any Done-when box that's now met, and add anything newly out of scope under "Noticed, not pursued." Scope is capped at one screen; once it exceeds that it has become a plan, and the overflow moves to `BACKLOG.md`, not scope.md. Then walk every item in the task ledger:
 
 - Done → marked complete, not carried.
 - Open → recorded in the project-root `BACKLOG.md` (create if absent; append under a dated heading in the file's existing style; never duplicate an item already listed). Label each as *carried* or *parked* so a carried item does not read as duplicate parking. BACKLOG.md is the durable record that survives the wipe — the pickup prompt is lossy by design and must never be an item's only record.
