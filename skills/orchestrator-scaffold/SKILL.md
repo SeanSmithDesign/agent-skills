@@ -26,9 +26,11 @@ Triggered by: bare `/orchestrator:scaffold`
 3. Derive the memory dir path: replace `/` with `-` and spaces with `-` in the full path, prepend nothing. Example: `~/Code/my-app/` → `~/.claude/projects/-Users-yourname-Code-my-app/memory/`.
 4. Run the presence check (see Detection Logic section):
    - Check project root for: `CLAUDE.md`, `DESIGN.md`, `mission.md`, `brand.md`, `principles.md`, `BACKLOG.md`
-   - Check memory dir for: `agent-product.md`, `agent-experience.md`, `agent-craft.md`, `agent-build.md`, `agent-data.md`, `agent-quality.md`, `general-agent-context.md`, `scope.md`
+   - Check memory dir for: `agent-product.md`, `agent-experience.md`, `agent-craft.md`, `agent-build.md`, `agent-data.md`, `agent-quality.md`, `general-agent-context.md`
 
-   `BACKLOG.md` and `scope.md` don't gate version or need the interview: create an empty stub silently if missing, never overwrite an existing one. `BACKLOG.md` starts with a bare top heading. `scope.md` starts from the one-screen template (Objective, Done when, In scope, Out of scope, Noticed not pursued, Thread) and is expected to be absent or empty between threads. If `scope.md` is present and over one screen, note it as drift; it has become a plan and belongs in a durable doc instead.
+   `BACKLOG.md` doesn't gate version or need the interview: create an empty stub silently if missing, never overwrite an existing one. It starts with a bare top heading.
+
+   **Scope files are never scaffolded.** Each session's scope lives at `~/.claude/scope/$CLAUDE_CODE_SESSION_ID.md`, written automatically at SessionStart by the `scope-init.sh` hook. Don't check for one, don't create one, don't report it as a gap.
 5. Present gap report:
 
 ```
@@ -170,7 +172,6 @@ project-root/
 ~/.claude/projects/<path>/memory/
   ORCHESTRATOR.md
   MEMORY.md
-  scope.md            (thread-level, hours to days, not committed to git)
   agent-product.md
   agent-experience.md
   agent-craft.md
@@ -180,7 +181,7 @@ project-root/
   general-agent-context.md
 ```
 
-Project-root files travel with the code and are committed. Memory-dir files are private, uncommitted, and can churn hourly (`scope.md`) or grow over months (`ORCHESTRATOR.md`).
+Project-root files travel with the code and are committed. Memory-dir files are private, uncommitted, and grow over months (`ORCHESTRATOR.md`).
 
 ## Detection Logic
 

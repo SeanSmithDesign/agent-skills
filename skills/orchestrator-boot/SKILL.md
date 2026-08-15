@@ -42,7 +42,9 @@ Check for `CLAUDE.md` (required); `DESIGN.md` (required when `*.tsx`, `*.jsx`, `
 
 ## 4. Read existing context
 
-**First, check `<memory-dir>/scope.md`.** This is the thread's locked objective, and it must be read before anything else here. If present, surface the Objective line and any unchecked Done-when boxes as part of step 7. If absent, say nothing and do not create one; scope.md is written by working threads, not by boot.
+**First, read this session's scope file at `~/.claude/scope/$CLAUDE_CODE_SESSION_ID.md`.** It is written automatically at SessionStart by the `scope-init.sh` hook, so it is normally present; if it is absent, say nothing and do not create one. Surface the Objective line and any unchecked Done-when boxes as part of step 7.
+
+**If `Objective:` reads `unset`, fill it in.** Boot is where the thread's objective becomes known, so boot is what writes it — a scope file left at `unset` records nothing and guards nothing. Replace the `unset` line with the objective in one sentence, and replace the `- [ ] unset` placeholder under `## Done when` with the observable conditions that would make this thread finished. If the objective genuinely is not yet known at boot, leave it and say so in step 7 rather than inventing one.
 
 **Rehydration short-circuit — check this BEFORE reading anything.** The point of the short-circuit is to avoid expensive work; do not pay a large read to evaluate it.
 
