@@ -1,6 +1,6 @@
 ---
 name: orchestrator-route
-description: Route an over-cap ORCHESTRATOR.md down to a router-shaped file without destroying durable value. Use when a size gate fires, when /wrap reports the file is over its 20,000-char cap, or when Sean says "route this", "prune orchestrator", "this file is too big", "/orchestrator-route". NOT for a file that is merely untidy — the trigger is size or staleness, and the operation is routing facts to their owners, never deleting by age.
+description: Route an over-cap ORCHESTRATOR.md down to a router-shaped file without destroying durable value. Use when a size gate fires, when /wrap reports the file is over its 10,000-15,000-char target range (20,000 hard max), or when Sean says "route this", "prune orchestrator", "this file is too big", "/orchestrator-route". NOT for a file that is merely untidy — the trigger is size or staleness, and the operation is routing facts to their owners, never deleting by age.
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 version: 0.1.0
 ---
@@ -72,6 +72,17 @@ cat MEMORY.md mission.md general-agent-context.md agent-*.md ORCHESTRATOR.md | w
 ```
 
 Compare the boot-set drop to the file drop. A small gap is expected and correct — indexing extracted files in `MEMORY.md` costs a little, and that cost is the routing mechanism working, not leaked bytes. Treat it as a Gate 2 violation only when the boot-set drop is under half the file's drop — that means bytes moved to another always-read file instead of the on-demand tier. Report both numbers or the run is unverified.
+
+## Per-section budget
+
+The 10,000–15,000-char target range needs sub-allocation, or whichever section is growing absorbs the whole range — this already happened once: the decision log correctly held 3 entries, but the entries themselves grew to ~2,000 chars each.
+
+| Section | Budget |
+|---|---|
+| Header / frontmatter | ~800 |
+| Architecture Summary + Active Conventions + Fragile Areas + Relevant Paths | ~5,500 |
+| Decision Log (3 entries, ≤1,300 chars each) | ~4,000 |
+| In-Flight Work (live items only) | ~4,500 |
 
 ## The target shape
 

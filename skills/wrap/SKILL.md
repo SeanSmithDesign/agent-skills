@@ -102,7 +102,16 @@ Run what the session earned. Steps 0 and 4 are the load-bearing ones.
 
 ## Size ceilings
 
-Files that load automatically into every future session (`MEMORY.md`, `ORCHESTRATOR.md`, `CLAUDE.md`) cap at **20,000 characters, measured with `wc -c` — never in lines.** A line count hides real growth here: these files are written in paragraphs, so a file that blows the char cap 5x over can still read as "a few hundred lines." Keeping one current means cutting what has gone stale, not only appending what is new. If one is over, say so in the close-out and offer a specific prune naming the sections — never delete on your own authority. Leaving an oversized always-read file unmentioned is a miss.
+Files that load automatically into every future session (`MEMORY.md`, `ORCHESTRATOR.md`, `CLAUDE.md`) are measured with `wc -c` — never in lines. A line count hides real growth here: these files are written in paragraphs, so a file that blows the char cap 5x over can still read as "a few hundred lines." `MEMORY.md` and `CLAUDE.md` cap at **20,000 characters.** `ORCHESTRATOR.md` targets **10,000–15,000 characters, hard max 20,000**, sub-allocated by section so no single section absorbs the whole range:
+
+| Section | Budget |
+|---|---|
+| Header / frontmatter | ~800 |
+| Architecture Summary + Active Conventions + Fragile Areas + Relevant Paths | ~5,500 |
+| Decision Log (3 entries, ≤1,300 chars each) | ~4,000 |
+| In-Flight Work (live items only) | ~4,500 |
+
+Keeping one current means cutting what has gone stale, not only appending what is new. If one is over its cap (or `ORCHESTRATOR.md` is over its target range), say so in the close-out and offer a specific prune naming the sections — never delete on your own authority. Leaving an oversized always-read file unmentioned is a miss.
 
 ## Proportion
 

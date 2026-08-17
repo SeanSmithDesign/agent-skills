@@ -25,7 +25,7 @@ npx skills add seansmithworks/agent-skills -s '*' -g       # all of them, global
 | [`/orchestrator-boot`](#orchestrator-boot) | New orchestrator thread → context loaded, ready to work |
 | [`/orchestrator-update`](#orchestrator-update) | Pending config improvements sitting unreviewed → applied and eval-checked |
 | [`/orchestrator-scaffold`](#orchestrator-scaffold) | New or half-set-up project → agent and grounding files in place |
-| [`/orchestrator-route`](#orchestrator-route) | Over-cap ORCHESTRATOR.md → facts routed to their owners, file back under cap |
+| [`/orchestrator-route`](#orchestrator-route) | Over-target ORCHESTRATOR.md → facts routed to their owners, file back in range |
 | [`/gh-clean-branches`](#gh-clean-branches) | Local branches piling up → stale and merged ones pruned |
 | [`/gh-pr-triage`](#gh-pr-triage) | Open PRs scattered across repos → grouped by what needs action |
 | [`/gh-fork-sync`](#gh-fork-sync) | Fork drifting behind upstream → synced and pushed to origin |
@@ -89,9 +89,9 @@ The orchestrator is a long-lived Claude Code thread that never writes code. It l
 
 ### /orchestrator-route
 
-`Over-cap ORCHESTRATOR.md → facts routed to their owners, file back under cap`
+`Over-target ORCHESTRATOR.md → facts routed to their owners, file back in range`
 
-**When:** a size gate fires, `/wrap` reports the file over its 20,000-char cap, or you say "route this" or "this file is too big."
+**When:** a size gate fires, `/wrap` reports the file over its 10,000-15,000-char target range (20,000 hard max), or you say "route this" or "this file is too big."
 **Does:** routes durable facts out of `ORCHESTRATOR.md` to the memory files that own them, it's a router, not a store or a log. Six gates keep it honest: never evict by recency, route to the on-demand layer instead of always-read agent files, never archive a fact that's still true, verify every fact kept a home, commit a baseline before editing, measure the whole boot set (not just the one file) before and after. Not a tidy-up pass, it triggers on size or staleness only.
 **Install:** `npx skills add seansmithworks/agent-skills --skill orchestrator-route`
 

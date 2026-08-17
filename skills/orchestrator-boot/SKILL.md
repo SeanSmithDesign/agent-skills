@@ -59,7 +59,7 @@ Otherwise read the fuller set: `MEMORY.md`, `mission.md`, all `agent-*.md`, `gen
 
 **Never read at boot in either case:** `ORCHESTRATOR-log.md` (decision-log archive), `INDEX.md`, `tease-capture.md`, `tier_overrides.md`, or any `ORCHESTRATOR-*.md` sibling. These are on-demand.
 
-**If `ORCHESTRATOR.md` exceeds 20,000 chars, say so in step 7** — it has drifted past its cap and needs a prune. Measure with `wc -c`, never in lines: the lines are paragraphs, so a line count hides real growth.
+**If `ORCHESTRATOR.md` exceeds 15,000 chars, say so in step 7** — it has drifted past its 10,000–15,000-char target range (20,000 hard max) and needs a prune. Measure with `wc -c`, never in lines: the lines are paragraphs, so a line count hides real growth.
 
 ## 5. Scaffold if bare
 
