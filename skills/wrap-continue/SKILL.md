@@ -124,7 +124,7 @@ A full box would need every line padded to a fixed width, which breaks on long p
 
 **End the block with a recap gate, addressed to the next thread, not to Sean.** The last line inside the fence, before the bottom delimiter, instructs the next thread: reading files, grepping, checking git state, and pulling memory or scaffolding context is fine without asking — gather that first, since it's what makes the recap accurate instead of a guess. But before the first change — writing or editing a file, running a build or migration, dispatching a subagent that will change something, or any other irreversible or outward-facing action — state back in a few lines what it understands the objective to be and what it is about to do first, then wait for confirmation — not a full plan, an alignment check sized so Sean can confirm or correct in one reply. This is a gate the next thread waits on, not a recap it narrates while already working. It stays inside the fence, as the final line of the block, so it survives the paste — moving it outside the fence defeats the point.
 
-**Thread name.** `jq -r '[.nameSource, .name] | @tsv' ~/.claude/sessions/$CLAUDE_PID.json 2>/dev/null`. Carry it forward only if `nameSource` is `user`. If it is `derived`/`auto`, or the file or `jq` is missing, skip in silence — an auto slug like `code-55` carries no signal and must never be surfaced as though it did. When a user-set name exists: put `Thread: <name>` as the line inside the block immediately following the top delimiter (see ordering above; prose, not a command), and below the block, outside it, give the working mechanism — `type /rename "<name>" in the new thread (or launch it as claude -n "<name>")`. `/rename` only fires as an entire message, so it cannot live in the paste.
+**Thread name.** `jq -r '.name // empty' ~/.claude/sessions/$CLAUDE_PID.json 2>/dev/null`. This is a **shape heuristic, not a provenance field** — session files carry no field marking a name as user-set vs. auto-generated (checked against Claude Code 2.1.235: the only name-related keys present are `name` and `nameSince`), so do not go looking for one to "restore." Carry the name forward unless it matches the auto-generated-slug shape — lowercase alphanumeric words joined by dashes and ending in a dash plus digits, regex `^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$` (e.g. `code-55`, `agent-skills-12`). If it matches that shape, or the value is empty, or the file or `jq` is missing, skip in silence — an auto slug carries no signal and must never be surfaced as though it did. When a real name exists: put `Thread: <name>` as the line inside the block immediately following the top delimiter (see ordering above; prose, not a command), and below the block, outside it, give the working mechanism — `type /rename "<name>" in the new thread (or launch it as claude -n "<name>")`. `/rename` only fires as an entire message, so it cannot live in the paste.
 
 **Worktree relaunch command.** When the session is in a worktree (detected above), give the exact relaunch command below the block, outside it, alongside the `/rename` guidance — it is an instruction to Sean about how to launch, not text for the next agent: `cco pickup` (or `cco pickup <name>` to skip straight to this entry). `cco pickup` restores the worktree + delivers the pickup prompt in one step, matched by the `worktree:`/`repo:`/`thread:` fields in the pickup file's frontmatter — no manual `cd` needed. Skip in silence when not in a worktree. Note for Sean: bare `cco` is the clean-slate path and will not deliver this prompt — `cco pickup` is required to resume.
 
@@ -153,7 +153,11 @@ else
   worktree="$(basename "$toplevel")"
 fi
 repo="$(basename "$(dirname "$git_common_dir")")"
-# thread: only when the Thread name section above found nameSource == "user" — never a derived/auto slug.
+# thread: same shape heuristic as the Thread name section above — never a derived/auto slug.
+thread="$(jq -r '.name // empty' ~/.claude/sessions/$CLAUDE_PID.json 2>/dev/null)"
+if [[ "$thread" =~ ^[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$ ]]; then
+  thread=""
+fi
 
 {
   printf '%s\n' "---"
