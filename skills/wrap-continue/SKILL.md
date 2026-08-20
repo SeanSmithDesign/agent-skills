@@ -84,7 +84,7 @@ Compact — sized for a fast re-read, not a report. 150–350 words is the targe
 - `Working directory:` as an **absolute path** (`/Users/seansmith/Code/...`), not a tilde. If the session is in a worktree, this is the worktree's path, not the main tree's.
 - **Worktree carry-forward.** Detect with `git rev-parse --git-dir` vs `git rev-parse --git-common-dir` — if they differ, the session is in a worktree. Get its name with `basename "$(git rev-parse --show-toplevel)"`. When in a worktree, name it inline in the block (e.g. `Worktree: <name>`) so the next thread has it as context. When not in a worktree, say nothing — no "not in a worktree" line.
 
-Below the block, outside it, tell Sean to **quit this session before opening the new one** — a predecessor left running holds the tree's lock, so the zsh collision guard reads it as concurrent and strands the successor in a fresh throwaway worktree instead of continuing in this one. This does not conflict with keeping the block scrollable for re-copying: the clipboard copy below already carries the block past the quit, so nothing is lost by closing the tab. Relaunching via `cco` or `ccw` delivers this prompt automatically as the new thread's opening message — no manual paste needed. The inline block is the fallback for any other launch path (a fresh `claude`, a different machine, or the clipboard/pickup file being unavailable).
+Below the block, outside it, tell Sean to **quit this session before opening the new one** — a predecessor left running holds the tree's lock, so the zsh collision guard reads it as concurrent and strands the successor in a fresh throwaway worktree instead of continuing in this one. This does not conflict with keeping the block scrollable for re-copying: the clipboard copy below already carries the block past the quit, so nothing is lost by closing the tab. Relaunching via `cco pickup` (or `cco pickup <name>`) delivers this prompt automatically as the new thread's opening message — no manual paste needed. Bare `cco` is the clean-slate path and will **not** deliver it. The inline block is the fallback for any other launch path (a fresh `claude`, a different machine, or the clipboard/pickup file being unavailable).
 
 **Render it inline in the response, in a single fenced block, and put every heading, label and instruction to the user *outside* the fence.** Anything inside the fence gets pasted into the next thread; a stray `## Pickup prompt` heading or a slash command inside it lands as garbage there. That block is the primary deliverable — the user must be able to see it, scroll back, and re-copy it.
 
@@ -126,7 +126,7 @@ A full box would need every line padded to a fixed width, which breaks on long p
 
 **Thread name.** `jq -r '[.nameSource, .name] | @tsv' ~/.claude/sessions/$CLAUDE_PID.json 2>/dev/null`. Carry it forward only if `nameSource` is `user`. If it is `derived`/`auto`, or the file or `jq` is missing, skip in silence — an auto slug like `code-55` carries no signal and must never be surfaced as though it did. When a user-set name exists: put `Thread: <name>` as the line inside the block immediately following the top delimiter (see ordering above; prose, not a command), and below the block, outside it, give the working mechanism — `type /rename "<name>" in the new thread (or launch it as claude -n "<name>")`. `/rename` only fires as an entire message, so it cannot live in the paste.
 
-**Worktree relaunch command.** When the session is in a worktree (detected above), give the exact relaunch command below the block, outside it, alongside the `/rename` guidance — it is an instruction to Sean about how to launch, not text for the next agent: `cd /Users/seansmith/Code/<repo>/.claude/worktrees/<name> && cco`. `claude -w` *creates* a worktree per `claude --help`, it does not re-enter one — do not use it here. `cd`-ing straight to the worktree's absolute path is unambiguous: `git rev-parse --show-toplevel` resolves to the worktree itself, so it gets its own lock key and the collision guard's fresh isolation never fires. Skip in silence when not in a worktree. Note for Sean: `ccw <name>` does the same `cd` + `cco` in one step and works whether the worktree exists yet or not — either relaunch path delivers the pickup file automatically, no paste required.
+**Worktree relaunch command.** When the session is in a worktree (detected above), give the exact relaunch command below the block, outside it, alongside the `/rename` guidance — it is an instruction to Sean about how to launch, not text for the next agent: `cco pickup` (or `cco pickup <name>` to skip straight to this entry). `cco pickup` restores the worktree + delivers the pickup prompt in one step, matched by the `worktree:`/`repo:`/`thread:` fields in the pickup file's frontmatter — no manual `cd` needed. Skip in silence when not in a worktree. Note for Sean: bare `cco` is the clean-slate path and will not deliver this prompt — `cco pickup` is required to resume.
 
 **Clipboard** (convenience, best-effort, never a blocker):
 
@@ -138,14 +138,34 @@ EOF
 
 Unavailable (non-macOS, no clipboard)? One footnote in the status table. Not an error, not repeated in prose.
 
-**Pickup file** (sibling to the clipboard step, same best-effort contract — the clipboard copy is the only carrier today, and anything copied over it before relaunch loses the handoff). Write the identical prompt body — no fence delimiters, no headings, no surrounding prose, exactly what goes inside the fence — to disk so `cco`/`ccw` can deliver it automatically on the next launch:
+**Pickup file** (sibling to the clipboard step, same best-effort contract — the clipboard copy is the only carrier today, and anything copied over it before relaunch loses the handoff). Write frontmatter followed by the identical prompt body — no fence delimiters, no headings, no surrounding prose in the body, exactly what goes inside the fence — to disk so `cco pickup` can deliver it automatically on the next launch. The filename key is a lossy mangling of the toplevel path (every non-alphanumeric char becomes a dash) and cannot be reversed, so the frontmatter stores the real values directly — `path:` is the absolute toplevel, never derived from the key:
 
 ```bash
 key="$(git rev-parse --show-toplevel | sed -E 's/[^a-zA-Z0-9]/-/g')"
 mkdir -p "$HOME/.claude/pickup"
-cat <<'EOF' > "$HOME/.claude/pickup/${key}.md"
+
+toplevel="$(git rev-parse --show-toplevel)"
+git_dir="$(cd "$(git rev-parse --git-dir)" && pwd)"
+git_common_dir="$(cd "$(git rev-parse --git-common-dir)" && pwd)"
+if [[ "$git_dir" == "$git_common_dir" ]]; then
+  worktree="main"
+else
+  worktree="$(basename "$toplevel")"
+fi
+repo="$(basename "$(dirname "$git_common_dir")")"
+# thread: only when the Thread name section above found nameSource == "user" — never a derived/auto slug.
+
+{
+  printf '%s\n' "---"
+  printf 'thread: %s\n' "$thread"
+  printf 'repo: %s\n' "$repo"
+  printf 'worktree: %s\n' "$worktree"
+  printf 'path: %s\n' "$toplevel"
+  printf '%s\n' "---"
+  cat <<'EOF'
 [prompt content]
 EOF
+} > "$HOME/.claude/pickup/${key}.md"
 ```
 
 Keyed on the repo's toplevel, so a worktree gets its own pickup file (its toplevel is itself). Fails silently, no retry — one footnote in the status table if it fails, never a blocker.
