@@ -112,6 +112,8 @@ Then launch the orchestrator thread with:
 claude --append-system-prompt-file ~/.claude/orchestrator-prompt.md
 ```
 
+The [Launchers](#launchers) section below wraps this in a `cco` shortcut, along with `ccb` and `ccp`, this raw command is just the no-setup fallback.
+
 ---
 
 ## Launchers
