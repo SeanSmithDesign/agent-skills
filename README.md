@@ -95,7 +95,7 @@ The orchestrator is a long-lived Claude Code thread that never writes code. It l
 **Does:** routes durable facts out of `ORCHESTRATOR.md` to the memory files that own them, it's a router, not a store or a log. Six gates keep it honest: never evict by recency, route to the on-demand layer instead of always-read agent files, never archive a fact that's still true, verify every fact kept a home, commit a baseline before editing, measure the whole boot set (not just the one file) before and after. Not a tidy-up pass, it triggers on size or staleness only.
 **Install:** `npx skills add seansmithworks/agent-skills --skill orchestrator-route`
 
-The orchestrator family requires two companion files that aren't skills, copy them from `templates/` before using:
+The orchestrator family requires three companion files that aren't skills, copy them from `templates/` and `shell/` before using:
 
 ```bash
 # Copy the companion files into your Claude config dir
@@ -111,6 +111,36 @@ Then launch the orchestrator thread with:
 ```bash
 claude --append-system-prompt-file ~/.claude/orchestrator-prompt.md
 ```
+
+---
+
+## Launchers
+
+Three ways to open an orchestrator thread, two ways to close one.
+
+| | Close | Reopen |
+| --- | --- | --- |
+| Done for the day | `/wrap` | `cco` (clean slate) or `ccb` (rehydrate state) |
+| Not done, out of context | `/wrap-continue` | `ccp` (worktree + prompt restored) |
+
+`/wrap-continue` → `ccp` is the only closed loop of the four: one writes the pickup file, the other consumes it. `ccp` does nothing useful without the `wrap-continue` skill installed.
+
+What each command does:
+
+- **`cco`** loads the orchestrator system prompt with scaffolding only — cheap.
+- **`ccb`** does the same, then runs `/orchestrator-boot` to rehydrate prior state — much more context, which is the entire reason these are two commands, not one.
+- **`ccp`** is shorthand for `cco pickup`: restores the worktree and delivers the saved pickup prompt as the new thread's opening message.
+
+Install:
+
+```bash
+mkdir -p ~/.claude/shell
+curl -o ~/.claude/shell/orchestrator.zsh \
+  https://raw.githubusercontent.com/seansmithworks/agent-skills/main/shell/orchestrator.zsh
+echo 'source ~/.claude/shell/orchestrator.zsh' >> ~/.zshrc
+```
+
+Caveats: zsh only, not bash. And if you add your own `cc` shortcut for `claude`, it shadows `/usr/bin/cc`, the system C compiler, in interactive shells — this file deliberately does not ship that alias.
 
 ---
 
