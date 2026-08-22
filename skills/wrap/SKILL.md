@@ -1,6 +1,6 @@
 ---
 name: wrap
-description: End-of-session close-out — secure uncommitted work, put every open item in a durable home, refresh shared project state, and report honestly what was captured and what was skipped. Use when Sean is done for the day or longer ("wrap", "wrap it up", "done for now", "that's it for today", "end session", /wrap), including when the session contained almost nothing — it then correctly does almost nothing rather than not running. Retrospective only: never emits a resume/pickup prompt. Do NOT use for mid-task context recycling where the same work continues in a fresh thread (that is /wrap-continue), for answering questions about what wrapping does, or when a single narrower capture was asked for (just commit this, save one note).
+description: End-of-session close-out — secure uncommitted work, put every open item in a durable home, refresh shared project state, and report honestly what was captured and what was skipped. Use when Sean is done for the day or longer ("wrap", "wrap it up", "done for now", "that's it for today", "end session", /wrap), including when the session contained almost nothing — it then correctly does almost nothing rather than not running. Retrospective only — never emits a resume/pickup prompt. Do NOT use for mid-task context recycling where the same work continues in a fresh thread (that is /wrap-continue), for answering questions about what wrapping does, or when a single narrower capture was asked for (just commit this, save one note).
 license: MIT
 metadata:
   version: 1.0.0
@@ -58,9 +58,9 @@ Match what's already in each file: edit the existing entry rather than appending
 | Durable decisions, learnings, corrections, gotchas, in-flight-work detail | a named file in the same `memory/` dir (`agent-*.md`, `reference_*`, `feedback_*`), indexed in its `MEMORY.md`, linked from `ORCHESTRATOR.md` by `[[wikilink]]` |
 | Superseded `ORCHESTRATOR.md` content (prior PICKUP block, closed items) | `.claude/projects/<escaped-path>/memory/ORCHESTRATOR-log.md` |
 | Cross-project status | `~/.claude/projects/project-facts.md` — edit the existing block; new blocks follow the schema at the top of that file, including default flags (a freshly shipped milestone is `promoted: no`) |
-| Deferred-intent log | `~/.claude/projects/-Users-seansmith-Code/memory/tease-capture.md` — its own 30-day prune rule is documented inside it |
+| Deferred-intent log | `~/.claude/projects/<escaped-path>/memory/tease-capture.md` — its own 30-day prune rule is documented inside it |
 | Session narrative | the repo's existing notes location for code projects, **or** the project's Second Brain thread for cross-domain/life projects — one, never both |
-| Tickets | Linear via `mcp__claude_ai_Linear__save_issue`, if the project tracks tickets |
+| Tickets | Linear via `mcp__claude_ai_Linear__save_issue` (the exact tool ID depends on what you named your Linear MCP server), if the project tracks tickets |
 
 Session-scoped facts never enter a cross-session file at all — not `ORCHESTRATOR.md`, not a memory file. Test before writing a line into either: would a fresh thread that never reads this line do something wrong because of it? A PID, a port, "the MCP was down this session" — none of these are evaluable later, so none of them get written, even as a status update.
 
@@ -70,7 +70,7 @@ Stage by explicit path. `git add -A` sweeps another session's edits when two thr
 
 ## The pass
 
-Read `~/.claude/BREVITY.md` before writing any notes or close-out prose — it sets the 150–350 word target range and structure rules the session record and close-out below must follow.
+The session record and close-out below both target 150–350 words with the structure rules given in each section.
 
 Run what the session earned. Steps 0 and 4 are the load-bearing ones.
 
@@ -152,7 +152,7 @@ A skipped step is a correct outcome. A skipped step that vanishes from the close
   ╰─────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-Default to bullets, not paragraphs. **The banner above always leads the close-out** — it is a marker, not content, and does not count against the word target below. **No boxed status table, no per-step checklist** — those restate the close-out itself, and that repetition costs the read. Length scales with the session: two to five lines when little happened; for a heavy session, a short labelled list, one line per area, ~15 lines at the outside. 150–350 words is the target range per `~/.claude/BREVITY.md` — over range means reorder, deduplicate, or demote, never cut something load-bearing.
+Default to bullets, not paragraphs. **The banner above always leads the close-out** — it is a marker, not content, and does not count against the word target below. **No boxed status table, no per-step checklist** — those restate the close-out itself, and that repetition costs the read. Length scales with the session: two to five lines when little happened; for a heavy session, a short labelled list, one line per area, ~15 lines at the outside. 150–350 words is the target range — over range means reorder, deduplicate, or demote, never cut something load-bearing.
 
 Lead with the thing Sean most needs to know — a gap, a broken state, a decision waiting on him — not a chronology.
 

@@ -48,9 +48,8 @@ Options:
 
 Before applying anything:
 
-- Run the tokenize script: `python3 ~/.claude/evals/tokenize.py` — save output as baseline. This measures token counts for the auto-loaded context layers (global CLAUDE.md, global MEMORY.md, orchestrator-prompt.md, project CLAUDE.md).
-- Run the 8-test behavioral suite from `~/.claude/evals/orchestrator-smoke-test.md` (spawn a subagent that reads the config + predicts outcomes for all 8 tests) — save as baseline.
-- This step cannot be skipped. A session that applies changes without a baseline has no signal on regressions.
+- If `~/.claude/evals/` exists: run the tokenize script `python3 ~/.claude/evals/tokenize.py` — save output as baseline. This measures token counts for the auto-loaded context layers (global CLAUDE.md, global MEMORY.md, orchestrator-prompt.md, project CLAUDE.md). Then run the 8-test behavioral suite from `~/.claude/evals/orchestrator-smoke-test.md` (spawn a subagent that reads the config + predicts outcomes for all 8 tests) — save as baseline. This step cannot be skipped. A session that applies changes without a baseline has no signal on regressions.
+- If `~/.claude/evals/` does not exist: fall back. Baseline becomes `wc -c` on every file named in the selected entries' blast radius, taken now. The behavioral suite is skipped. The Step 7 report must say explicitly that the eval suite was unavailable and this fallback ran instead.
 
 ### Step 4 — Apply
 
@@ -64,11 +63,8 @@ For each selected entry:
 
 After all selected entries applied:
 
-- Re-run `python3 ~/.claude/evals/tokenize.py` — save output as post-apply result.
-- Re-run the 8-test behavioral suite from `~/.claude/evals/orchestrator-smoke-test.md` — save as post-apply result.
-- Compare to baselines and produce a delta report. Format: `MEMORY.md: 1,652 → N tokens (±delta). Behavioral: N/8 PASS.`
-- **If behavioral suite shows regressions:** surface them with HIGH visibility (e.g., `⚠ REGRESSION: Test 3 DESIGN.md awareness — was PASS, now FAIL`). Do NOT silently apply. The user retains override authority — if they confirm, proceed. If unconfirmed, hold and explain what regressed.
-- This step cannot be skipped. The eval is non-bypassable by design.
+- If `~/.claude/evals/` exists: re-run `python3 ~/.claude/evals/tokenize.py` — save output as post-apply result. Re-run the 8-test behavioral suite from `~/.claude/evals/orchestrator-smoke-test.md` — save as post-apply result. Compare to baselines and produce a delta report. Format: `MEMORY.md: 1,652 → N tokens (±delta). Behavioral: N/8 PASS.` **If behavioral suite shows regressions:** surface them with HIGH visibility (e.g., `⚠ REGRESSION: Test 3 DESIGN.md awareness — was PASS, now FAIL`). Do NOT silently apply. The user retains override authority — if they confirm, proceed. If unconfirmed, hold and explain what regressed. This step cannot be skipped. The eval is non-bypassable by design.
+- If `~/.claude/evals/` does not exist: re-run `wc -c` on the same files from the Step 3 fallback baseline and produce a byte-delta report. State plainly that the behavioral suite was skipped and regressions cannot be detected this run.
 
 ### Step 6 — Update registry
 

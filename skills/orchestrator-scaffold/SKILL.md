@@ -23,7 +23,7 @@ Triggered by: bare `/orchestrator:scaffold`
 
 1. Read `~/.claude/projects/SCAFFOLDING.md` to find the project's recorded version.
 2. Identify the current project from cwd — derive the project name from the directory name. Match against the registry table. If not found, treat as v0.
-3. Derive the memory dir path: replace `/` with `-` and spaces with `-` in the full path, prepend nothing. Example: `~/Code/my-app/` → `~/.claude/projects/-Users-yourname-Code-my-app/memory/`.
+3. Derive the memory dir path: replace every non-alphanumeric character in the full path with `-`, prepend nothing. Example: `~/Code/my-app/` → `~/.claude/projects/-Users-yourname-Code-my-app/memory/`.
 4. Run the presence check (see Detection Logic section):
    - Check project root for: `CLAUDE.md`, `DESIGN.md`, `mission.md`, `brand.md`, `principles.md`, `BACKLOG.md`
    - Check memory dir for: `agent-product.md`, `agent-experience.md`, `agent-craft.md`, `agent-build.md`, `agent-data.md`, `agent-quality.md`, `general-agent-context.md`
@@ -66,7 +66,7 @@ Mechanical scaffold of the six core lifecycle agent files using project-specific
 
 2. **Check for existing agent files.** If any of the six agent files already exist in the memory dir: read each one, report which exist, and ask — "These files already exist. Overwrite, skip individual files, or cancel?" MUST NOT overwrite without explicit confirmation.
 
-3. **Check for legacy v1 files.** If `agent-frontend.md`, `agent-backend.md`, `agent-api.md`, `agent-design.md`, or `agent-mobile.md` exist in the memory dir: surface the migration table before generating new files (see migration table in `reference_orchestrator-scaffolding-guide.md`). Do not auto-rename or delete old files — surface the migration plan and wait for the user's go-ahead.
+3. **Check for legacy v1 files.** If `agent-frontend.md`, `agent-backend.md`, `agent-api.md`, `agent-design.md`, or `agent-mobile.md` exist in the memory dir: read each one and propose which of the six v2.1 roles (product, experience, craft, build, data, quality — see step 5 below) its content maps to, then wait for the user's confirmation before folding it in. Do not auto-rename or delete old files — surface the migration plan and wait for the user's go-ahead.
 
 4. **Explore the codebase.** Dispatch an Explore subagent (T2 Sonnet) to map the project:
    - File inventory with one-line purposes
@@ -79,7 +79,7 @@ Mechanical scaffold of the six core lifecycle agent files using project-specific
 5. **Dispatch 6 parallel draft subagents** (T2 Sonnet), one per role: product, experience, craft, build, data, quality. Each subagent receives:
    - mission.md content
    - Explore report scoped to its domain
-   - Full lifecycle role definition and domain boundaries from `reference_orchestrator-scaffolding-guide.md`
+   - Its role's scope: product (why/who/what to build), experience (UX/UI/interaction), craft (design tokens, visual system), build (architecture, code conventions), data (schema, storage, sync), quality (testing, review, release gates)
    - Target: 80–150 lines per file, mandatory Gotchas section, cross-references instead of duplicated content
    - No token tables outside agent-craft.md — build references craft
 
@@ -278,15 +278,13 @@ Questions to ask:
 
 ## File Templates
 
-Do not generate from scratch — the exemplar files are the templates. Use these as the quality and structure bar.
-
 - **mission.md:** ~200 words, sections: why / who / promise / anti-goals / how to apply
 - **brand.md:** ~300 words, sections: voice / character / tone calibration per state / what it's not / how to apply
 - **principles.md:** ~330 words, sections: always / never / when in doubt / how to apply
 
 Each file MUST close with a "How to apply" section that tells a subagent when to pull this file in. Files without this section are documentation, not decision tools.
 
-For lifecycle agent files: use the role definitions, domain boundaries table, and scoping rules in `reference_orchestrator-scaffolding-guide.md` as the structural template.
+For lifecycle agent files: use the six role scopes and 80–150 line target given in the lifecycle mode's step 5 above as the structural template.
 
 ---
 
@@ -314,7 +312,7 @@ Three tunable decisions deferred to first-run. Sensible defaults are below — r
 
 **Project at v0, scratch, or \_experiments/:** MUST ask before doing anything. "This looks like a new or experimental project. Grounding files are designed for projects with at least a few weeks of continuity. Worth it here, or skip?" For confirmed experiments, offer lifecycle-only scaffolding (useful even short-term) or exit cleanly.
 
-**Legacy v1 projects (old-style agent files present):** Detect ad-hoc filenames: `agent-frontend.md`, `agent-backend.md`, `agent-api.md`, `agent-design.md`, `agent-mobile.md`, `agent-testing.md`, `agent-qa.md`. Surface the migration table from `reference_orchestrator-scaffolding-guide.md` before generating new lifecycle files. Do NOT auto-rename or delete old files — surface the migration plan and wait for the user's go-ahead. Never silently remove v1 files.
+**Legacy v1 projects (old-style agent files present):** Detect ad-hoc filenames: `agent-frontend.md`, `agent-backend.md`, `agent-api.md`, `agent-design.md`, `agent-mobile.md`, `agent-testing.md`, `agent-qa.md`. Read each and propose which v2.1 role it maps to (per the mapping step in lifecycle mode, step 3) before generating new lifecycle files. Do NOT auto-rename or delete old files — surface the migration plan and wait for the user's go-ahead. Never silently remove v1 files.
 
 **Git repo not detected at project root:** Note that grounding files will be written but are not yet tracked by git. Tell Sean: "No .git found — these files won't be version-controlled until you initialize a repo or move them into one."
 
@@ -338,7 +336,7 @@ The skill handles these steps before closing:
 
 ## Notes on Path Derivation
 
-The memory dir path formula: take the absolute path (e.g., `/Users/yourname/Code/my-app`), replace all `/` with `-` and all spaces with `-`. Do NOT strip the leading `/` — it becomes the leading `-`. Result: `-Users-yourname-Code-my-app`. Memory dir: `~/.claude/projects/-Users-yourname-Code-my-app/memory/`.
+The memory dir path formula: take the absolute path (e.g., `/Users/yourname/Code/my-app`), replace every non-alphanumeric character with `-`. Do NOT strip the leading `/` — it becomes the leading `-`. Result: `-Users-yourname-Code-my-app`. Memory dir: `~/.claude/projects/-Users-yourname-Code-my-app/memory/`.
 
 **Verify before writing.** Always run `ls ~/.claude/projects/ | grep <project-name-fragment>` before writing to confirm the actual dir name on disk. Path derivation is deterministic but dirs created by different Claude Code versions may have edge-case variants. Disk is truth; derivation is a starting guess.
 

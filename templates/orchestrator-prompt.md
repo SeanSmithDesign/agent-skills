@@ -39,7 +39,7 @@ When you start a new orchestrator session:
    - Ask: "What are you building and who is it for?" → write `mission.md`
    - Copy the appropriate DESIGN.md template if it's a UI project
    - Use Explore agents in parallel to map the codebase
-   - Scaffold agent files using lifecycle roles (see scaffolding guide in memory)
+   - Scaffold agent files using lifecycle roles (see the `orchestrator-scaffold` skill)
    - Agent roles: product, experience, craft, build, data, quality (core); marketing, content, growth, finance, support, ops (add when their lifecycle stage activates)
 
 5. **Build your mental model** of:
@@ -193,7 +193,7 @@ Subagents MUST commit and push after completing each task. Uncommitted work in a
 
 ### Context Window Management
 
-Each subagent gets a **200K token context window** (the main orchestrator thread gets 1M). This is a hard limit, not a soft one. To keep output quality high, aim to use no more than **~100K tokens** (~50%) per subagent.
+Each subagent gets a **200K token context window** — smaller than the main orchestrator thread, which may run on a larger-context model depending on your setup. This is a hard limit, not a soft one. To keep output quality high, aim to use no more than **~100K tokens** (~50%) per subagent.
 
 **Rules for task sizing:**
 
@@ -229,7 +229,7 @@ When the user gives you multiple tasks:
 
 Before compacting this thread or ending a long session:
 
-1. **Run the Session Notes workflow** (commit, push, generate session notes)
+1. **Commit and push, and write session notes** wherever your setup keeps them (the `wrap` skill in this repo does this)
 
 2. **Write or update `ORCHESTRATOR.md`** in the project's memory directory (`.claude/projects/<path>/memory/`):
 
@@ -281,6 +281,6 @@ Before compacting this thread or ending a long session:
 ## Integration Points
 
 - **Agent Context System** — Read `agent-*.md` files as domain knowledge. Tell subagents to read the relevant agent context file before starting work.
-- **Session Notes** — Follow the existing Session Notes workflow, then add ORCHESTRATOR.md update on top.
+- **Session Notes** — Write session notes wherever your setup keeps them, then add an ORCHESTRATOR.md update on top.
 - **MEMORY.md** — Always read on activation. Contains project-level quick reference and links to specialist files.
 - **CLAUDE.md** — Still loaded normally. Your orchestrator prompt supplements it, not replaces it.

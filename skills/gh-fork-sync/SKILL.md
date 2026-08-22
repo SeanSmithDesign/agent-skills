@@ -40,12 +40,25 @@ Look for a remote named `upstream` pointing to the original repo. If none exists
 
 Don't guess the upstream URL. Exit and wait.
 
-### 2. Show the gap
+### 2. Detect the default branch and check it out
 
 ```bash
 git fetch upstream
-git log HEAD..upstream/main --oneline | wc -l   # commits behind
-git log upstream/main..HEAD --oneline            # commits unique to fork
+```
+
+Try `main` first, fall back to `master` if `upstream/main` doesn't exist (same fallback `gh-clean-branches` uses). Call the result `$BRANCH` for the rest of this skill.
+
+```bash
+git checkout $BRANCH
+```
+
+Check out the branch before measuring the gap — behind/ahead counts computed from whatever branch the user happened to be on are wrong.
+
+### 3. Show the gap
+
+```bash
+git log HEAD..upstream/$BRANCH --oneline | wc -l   # commits behind
+git log upstream/$BRANCH..HEAD --oneline            # commits unique to fork
 ```
 
 Present a summary:
@@ -64,27 +77,25 @@ Present a summary:
 
 If already up to date, say so and exit.
 
-### 3. Confirm sync strategy
+### 4. Confirm sync strategy
 
 Default recommendation: **merge** (preserves your fork's commit history, safer for active forks). Offer rebase as an alternative if the user prefers a cleaner history.
 
-> Sync upstream/main into your fork's main?
+> Sync upstream/$BRANCH into your fork's $BRANCH?
 > Default strategy: merge. Say "rebase" to use rebase instead.
 
-### 4. Sync
+### 5. Sync
 
-For merge:
+You're already on `$BRANCH` from step 2. For merge:
 
 ```bash
-git checkout main
-git merge upstream/main
+git merge upstream/$BRANCH
 ```
 
 For rebase:
 
 ```bash
-git checkout main
-git rebase upstream/main
+git rebase upstream/$BRANCH
 ```
 
 If conflicts arise, stop immediately. List the conflicting files and exit with instructions:
@@ -93,15 +104,15 @@ If conflicts arise, stop immediately. List the conflicting files and exit with i
 > Resolve manually, then run `git merge --continue` (or `git rebase --continue`).
 > Do NOT auto-resolve conflicts.
 
-### 5. Push to your fork's origin
+### 6. Push to your fork's origin
 
 ```bash
-git push origin main
+git push origin $BRANCH
 ```
 
 **Safety rule: always push to `origin`, never to `upstream`.** This skill will never push to an upstream remote under any circumstances — not even if asked. Unintentional upstream pushes are hard to undo and can affect other contributors.
 
-### 6. Report
+### 7. Report
 
 ```
   ┌──────────────┬───────────────────────────────────────┐

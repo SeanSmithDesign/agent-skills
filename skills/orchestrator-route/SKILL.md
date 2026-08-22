@@ -30,7 +30,7 @@ Sort by lifespan, never by date:
 
 ## ⛔ Gate 2 — Route to the on-demand layer, not to `agent-*.md`
 
-`orchestrator-boot/SKILL.md:53` reads **all `agent-*.md`** at boot. Moving traps from `ORCHESTRATOR.md` into `agent-craft.md` moves bytes from one always-read file into another. Net zero. The headline number drops and nothing is saved.
+`orchestrator-boot/SKILL.md` ("Otherwise read the fuller set: `MEMORY.md`, `mission.md`, all `agent-*.md`, `general-agent-context.md`, `ORCHESTRATOR.md`") reads **all `agent-*.md`** at boot. Moving traps from `ORCHESTRATOR.md` into `agent-craft.md` moves bytes from one always-read file into another. Net zero. The headline number drops and nothing is saved.
 
 Durable traps go to `reference_*.md` / `feedback_*.md` in the same `memory/` dir — the on-demand tier — indexed in `MEMORY.md`, linked from `ORCHESTRATOR.md` by `[[wikilink]]`.
 
@@ -65,10 +65,10 @@ A committed baseline must exist before any edit. If `git status` shows the file 
 
 ## ⛔ Gate 6 — Success is the whole boot set, not one file
 
-Measure before and after:
+Measure before and after, run from the project's memory dir (`.claude/projects/<escaped-path>/memory/`, not the repo root):
 
 ```bash
-cat MEMORY.md mission.md general-agent-context.md agent-*.md ORCHESTRATOR.md | wc -c
+cd <memory-dir> && cat MEMORY.md mission.md general-agent-context.md agent-*.md ORCHESTRATOR.md | wc -c
 ```
 
 Compare the boot-set drop to the file drop. A small gap is expected and correct — indexing extracted files in `MEMORY.md` costs a little, and that cost is the routing mechanism working, not leaked bytes. Treat it as a Gate 2 violation only when the boot-set drop is under half the file's drop — that means bytes moved to another always-read file instead of the on-demand tier. Report both numbers or the run is unverified.

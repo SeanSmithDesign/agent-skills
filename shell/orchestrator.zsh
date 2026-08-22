@@ -19,6 +19,11 @@
 #   - `~/.claude/orchestrator-prompt.md` (copy from templates/ — see the
 #     README's orchestrator family section).
 #
+# Remote control is off by default. `cco` and `ccb` only pass
+# `--remote-control` to `claude` when `CCO_REMOTE_CONTROL` is set and
+# non-empty (`export CCO_REMOTE_CONTROL=1`) — that flag opens an outbound
+# control connection letting claude.ai/code drive the session.
+#
 # NOT included here: the worktree-isolation `claude()` wrapper that
 # `wrap-continue`'s docs reference indirectly (the collision guard that
 # auto-isolates a second concurrent session into its own worktree). That
@@ -161,7 +166,11 @@ _cc_pk_deliver() {
   local -a _pk_fwd_flags=("$@")
   _cc_pk_parse "$_pk_f"
 
-  if [[ -z "$_CC_PK_PATH" || ! -d "$_CC_PK_PATH" ]]; then
+  if [[ -z "$_CC_PK_PATH" ]]; then
+    printf '  \033[1;31m✗ pickup file has no stored path (missing or malformed frontmatter): %s\033[0m\n' "$_pk_f"
+    return 1
+  fi
+  if [[ ! -d "$_CC_PK_PATH" ]]; then
     printf '  \033[1;31m✗ worktree no longer exists: %s\033[0m\n' "$_CC_PK_PATH"
     return 1
   fi
@@ -203,7 +212,6 @@ _cc_pk_deliver() {
   fi
 
   cd "$_CC_PK_PATH" || return 1
-  (( _pk_was_consumed )) || mv -f "$_pk_f" "${_pk_f}.consumed"
   # Flags precede the positional prompt: claude [options] [command] [prompt].
   # -n restores the stored thread name only when one was captured AND no
   # explicit -n/--name was already forwarded — never synthesize a name,
@@ -211,7 +219,16 @@ _cc_pk_deliver() {
   if [[ -z "$_pk_explicit_name" && -n "$_CC_PK_THREAD" ]]; then
     _pk_fwd_flags+=(-n "$_CC_PK_THREAD")
   fi
+  # Launch first, consume only on success — a failed launch (e.g. cco not
+  # sourced, orchestrator-prompt.md missing) must leave the pickup file
+  # intact so the next `ccp` still finds it instead of reporting nothing
+  # pending.
   cco "${_pk_fwd_flags[@]}" "$_CC_PK_BODY"
+  local _pk_launch_status=$?
+  if (( _pk_launch_status == 0 )); then
+    (( _pk_was_consumed )) || mv -f "$_pk_f" "${_pk_f}.consumed"
+  fi
+  return $_pk_launch_status
 }
 
 # AND-matching, case-insensitive, literal (no glob/regex interpretation)
@@ -431,7 +448,8 @@ _cc_pk_cmd() {
 }
 
 cco() {
-  local base=(claude --remote-control --append-system-prompt-file ~/.claude/orchestrator-prompt.md)
+  local base=(claude --append-system-prompt-file ~/.claude/orchestrator-prompt.md)
+  [[ -n "$CCO_REMOTE_CONTROL" ]] && base+=(--remote-control)
 
   # Scan for a bare `pickup` token anywhere in the args, not just $1 —
   # flags may precede it (`cco -n "name" pickup <query>`). Everything
@@ -524,7 +542,8 @@ ccp() {
 
 ccb() {
   echo "✦ Orchestrator mode + boot"
-  local base=(claude --remote-control --append-system-prompt-file ~/.claude/orchestrator-prompt.md)
+  local base=(claude --append-system-prompt-file ~/.claude/orchestrator-prompt.md)
+  [[ -n "$CCO_REMOTE_CONTROL" ]] && base+=(--remote-control)
   # Flags must precede the positional prompt: claude [options] [command] [prompt]
   "${base[@]}" "$@" "/orchestrator-boot"
 }

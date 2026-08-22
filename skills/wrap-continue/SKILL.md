@@ -18,7 +18,7 @@ If the signal is "done for the day" / "work is complete" / "switching to somethi
 
 Everything below assumes the task continues.
 
-Read `~/.claude/BREVITY.md` before writing any capture or pickup prompt — it sets the 150–350 word target range and structure rules that Section 3 and Section 5 below must follow.
+Section 3 and Section 5 below both target 150–350 words with the structure rules given in each section.
 
 ## 1. Stop background writers first — ordering is load-bearing
 
@@ -74,7 +74,7 @@ State the thread's **locked objective** in one line, but first check it still de
 
 Always produced — it is the point of the exercise. Nothing uncommitted and nothing to capture is still a hit: the run is just short.
 
-Compact — sized for a fast re-read, not a report. 150–350 words is the target range per `~/.claude/BREVITY.md` — over range means reorder, deduplicate, or demote, never cut something load-bearing. Default to bullets. It carries only:
+Compact — sized for a fast re-read, not a report. 150–350 words is the target range — over range means reorder, deduplicate, or demote, never cut something load-bearing. Default to bullets. It carries only:
 
 - What is being built (one sentence). If the session's scope file exists, its Objective line and unchecked Done-when boxes go here verbatim — the next thread gets a fresh scope file of its own, so the prompt is the only thing that carries the lock across.
 - Where it stands, with the exact committed state (branch + SHA).

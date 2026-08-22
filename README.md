@@ -27,7 +27,7 @@ npx skills add seansmithworks/agent-skills -s '*' -g       # all of them, global
 | [`/orchestrator-scaffold`](#orchestrator-scaffold) | New or half-set-up project → agent and grounding files in place |
 | [`/orchestrator-route`](#orchestrator-route) | Over-target ORCHESTRATOR.md → facts routed to their owners, file back in range |
 | [`/gh-clean-branches`](#gh-clean-branches) | Local branches piling up → stale and merged ones pruned |
-| [`/gh-pr-triage`](#gh-pr-triage) | Open PRs scattered across repos → grouped by what needs action |
+| [`/gh-pr-triage`](#gh-pr-triage) | Open PRs in a repo scattered across states → grouped by what needs action |
 | [`/gh-fork-sync`](#gh-fork-sync) | Fork drifting behind upstream → synced and pushed to origin |
 | [`/gh-stale-issues`](#gh-stale-issues) | Issue list drifted into noise → triaged into ready-to-run commands |
 
@@ -142,7 +142,7 @@ curl -o ~/.claude/shell/orchestrator.zsh \
 echo 'source ~/.claude/shell/orchestrator.zsh' >> ~/.zshrc
 ```
 
-Caveats: zsh only, not bash. And if you add your own `cc` shortcut for `claude`, it shadows `/usr/bin/cc`, the system C compiler, in interactive shells — this file deliberately does not ship that alias.
+Caveats: zsh only, not bash. And if you add your own `cc` shortcut for `claude`, it shadows `/usr/bin/cc`, the system C compiler, in interactive shells — this file deliberately does not ship that alias. Remote control is off by default; `export CCO_REMOTE_CONTROL=1` enables driving the session from claude.ai/code.
 
 ---
 
@@ -160,7 +160,7 @@ Repos accumulate debt the same way context windows do, gradually, then all at on
 
 ### /gh-pr-triage
 
-`Open PRs scattered across repos → grouped by what needs action`
+`Open PRs in a repo scattered across states → grouped by what needs action`
 
 **When:** you want a status check on your open PRs and the ones waiting on your review.
 **Does:** groups PRs into your PRs needing action, PRs waiting on your review, and stale ones (14+ days), with a concrete next-action suggestion per row. Read-only.
@@ -196,7 +196,8 @@ These skills reference my specific setup. Here's what that means and what you'd 
 | `.claude/projects/*/memory/`        | Per-project memory dir              | Optional, Claude Code memory convention                                      |
 | `~/.claude/orchestrator-prompt.md`  | Orca system prompt                  | Required for orchestrator family, copy from `templates/`                     |
 | `~/.claude/PENDING-UPDATES.md`      | Config update registry              | Required for `/orchestrator:update`, copy from `templates/`                  |
-| `~/.claude/projects/SCAFFOLDING.md` | Per-project scaffold version index  | Used by `/orchestrator:scaffold`, create manually or let the skill create it |
+| `~/.claude/projects/SCAFFOLDING.md` | Per-project scaffold version index  | Used by `/orchestrator:scaffold`, create manually |
+| `~/.claude/evals/`                  | Token + behavioral regression suite | Optional. Without it, `/orchestrator:update` falls back to a `wc -c` byte-count baseline and skips the behavioral suite |
 
 The gh cleanup skills are stack-agnostic. The wrap skills work without Linear or Second Brain, just skip those steps. The orchestrator skills require the two template files above.
 
@@ -207,7 +208,7 @@ The gh cleanup skills are stack-agnostic. The wrap skills work without Linear or
 All ten skills:
 
 ```bash
-npx skills add seansmithworks/agent-skills
+npx skills add seansmithworks/agent-skills -s '*' -g
 ```
 
 Skills land in `~/.claude/skills/` and are available as slash commands in the next Claude Code session.
