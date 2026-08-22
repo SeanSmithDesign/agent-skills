@@ -105,8 +105,8 @@ flowchart TD
     D -->|yes| E[ccb]
     D -->|no| F[cco]
     G[Closing a thread] --> H{Is the work finished?}
-    H -->|yes| I[/wrap/]
-    H -->|no| J[/wrap-continue/]
+    H -->|yes| I["/wrap"]
+    H -->|no| J["/wrap-continue"]
 ```
 
 Caveats: zsh only, not bash. And if you add your own `cc` shortcut for `claude`, it shadows `/usr/bin/cc`, the system C compiler, in interactive shells — this file deliberately does not ship that alias. Remote control is off by default; `export CCO_REMOTE_CONTROL=1` enables driving the session from claude.ai/code.
