@@ -35,12 +35,13 @@ There are two ways out of a session and three ways back in. `/wrap-continue` →
 | [`/gh-pr-triage`](#gh-pr-triage) | Open PRs in a repo scattered across states → grouped by what needs action |
 | [`/gh-fork-sync`](#gh-fork-sync) | Fork drifting behind upstream → synced and pushed to origin |
 | [`/gh-stale-issues`](#gh-stale-issues) | Issue list drifted into noise → triaged into ready-to-run commands |
+| [`/model-census`](#model-census) | No visibility into which model actually ran → per-thread, per-subagent-type, per-repo report |
 
 ---
 
 ## What works without adopting my conventions
 
-**Standalone, zero dependencies:** the four `gh-*` skills. They reference none of my files or tools, just the `gh` CLI.
+**Standalone, zero dependencies:** the four `gh-*` skills, plus `/model-census`. The `gh-*` skills reference none of my files or tools, just the `gh` CLI. `/model-census` only needs `python3` and local transcripts — the agent templates and hook it reports on are companions, not prerequisites.
 
 **Self-bootstrapping:** `wrap` and `wrap-continue`. They reference `ORCHESTRATOR.md`, `BACKLOG.md`, `MEMORY.md`, and pickup files, but those are files the skills write, not prerequisites. `BACKLOG.md` gets created if it's missing, the `ORCHESTRATOR.md` step skips itself when the file doesn't exist, Linear and Second Brain are optional steps. Working session hygiene from day one, no setup required.
 
@@ -76,6 +77,27 @@ mkdir -p ~/.claude/shell
 curl -o ~/.claude/shell/orchestrator.zsh \
   https://raw.githubusercontent.com/seansmithworks/agent-skills/main/shell/orchestrator.zsh
 echo 'source ~/.claude/shell/orchestrator.zsh' >> ~/.zshrc
+```
+
+The tiers family (model hygiene) needs the four agent templates and the guard hook, copy those too:
+
+```bash
+mkdir -p ~/.claude/agents
+for f in explore implementer planner strategist; do
+  curl -o ~/.claude/agents/$f.md \
+    https://raw.githubusercontent.com/seansmithworks/agent-skills/main/templates/agents/$f.md
+done
+
+mkdir -p ~/.claude/hooks
+curl -o ~/.claude/hooks/model-default-guard.sh \
+  https://raw.githubusercontent.com/seansmithworks/agent-skills/main/templates/hooks/model-default-guard.sh
+chmod +x ~/.claude/hooks/model-default-guard.sh
+```
+
+Register the hook in `~/.claude/settings.json`:
+
+```json
+{"hooks":{"SessionStart":[{"matcher":"","hooks":[{"type":"command","command":"\"$HOME\"/.claude/hooks/model-default-guard.sh"}]}]}}
 ```
 
 ---
@@ -115,7 +137,7 @@ Caveats: zsh only, not bash. And if you add your own `cc` shortcut for `claude`,
 
 ## What's here
 
-Three families. Ten skills. All opinionated. Any single skill installs on its own with `--skill <name>`, so the per-skill install command isn't repeated below.
+Four families. Eleven skills. All opinionated. Any single skill installs on its own with `--skill <name>`, so the per-skill install command isn't repeated below.
 
 ### Wrap family: session hygiene
 
@@ -206,6 +228,19 @@ Repos accumulate debt the same way context windows do, gradually, then all at on
 
 **When:** before a release, after a period of heavy development, or whenever the issue list needs a pass.
 **Does:** triages open issues by age and last activity into buckets, no-activity (90d+), no-author-response (30d+), needs labels, needs triage, and generates ready-to-run `gh` commands per issue. Read-only, you run the commands.
+
+### Tiers family: model hygiene
+
+Four agent tiers, pinned once in agent frontmatter instead of decided per spawn. The orchestrator never passes a `model` param to `explore`, `implementer`, `planner`, or `strategist` — each carries its own tier, so routing can't drift task by task. Fable, the top tier, doesn't get to be a main-thread default: it's a per-task `strategist` seat only, because the main thread is the expensive place for a big model to sit — it pays to read every tool output, not just to think. The one skill in this family, `/model-census`, exists because none of the usual cost tools can see any of this: not the API console, not `ccusage`. They see tokens against an API key. They don't see which agent definition ran, or which repo it ran in.
+
+### /model-census
+
+`No visibility into which model actually ran → per-thread, per-subagent-type, per-repo report`
+
+**When:** you want to check tier routing is actually holding, or see where Fable/Opus tokens are going.
+**Does:** reads local transcripts (`~/.claude/projects/**`) and reconstructs, per main thread and per subagent, which model actually executed — joining the parent thread's subagent-type declaration to the subagent's own transcript by agent ID, since the two files don't share that link directly. `--brief --since <date>` for the quick version. Flag two things on sight: any Fable or top-tier row in the main-thread table, and a global `model` key in `settings.json` — that's usually `/model <x>` + Enter run without the session-only flag, and it silently taxes every session after. Token counts reported are raw, not dollars.
+
+Verified against ~1,250 subagent runs over a month: zero tier leaks. The leak was the main thread — `/model <x>` + Enter silently saves a global default; the SessionStart guard catches that.
 
 ---
 

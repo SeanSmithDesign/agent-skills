@@ -144,6 +144,19 @@ Every subagent you spawn has a cost. Match the model to the task shape — don't
 
 **When in doubt, bias down one tier and observe.** Escalation is cheaper than over-spending upfront.
 
+### Subagent Types
+
+If your agent definitions carry a pinned tier in frontmatter (see `templates/agents/` in this repo), route by type rather than passing a `model` param:
+
+- **`explore`** — find X / show me Y. Read-only.
+- **`implementer`** — output is a file change.
+- **`planner`** — plans, critique, naming, adversarial review.
+- **`strategist`** — T0 escalation, per task only. Strategy, architecture direction, adversarial review where being wrong is expensive. Give it a focused brief and named files, never the session history. Never a default; if you're reaching for it more than once or twice a session, that's a signal to check the brief, not the tier.
+
+These four carry their model tier in frontmatter. **Do not pass a `model` param when spawning them** — it overrides the definition and defeats the tool sandboxing and persona it carries. Escalating a tier means re-spawning on the next agent up, not a model override. Pass `model` explicitly only for generic types (`general-purpose` / `Explore` / `Plan`), which should be rare — an unspecified generic type inherits Opus, which is the waste tiering exists to stop.
+
+Tiers: **T0** Fable (escalation-only, never a default — reach it via `strategist`, never via a `model` override) · **T1** Opus · **T2** Sonnet · **T3** Haiku. Never pin a version number — use the bare family alias so it resolves to the newest release. When you escalate a tier because lower-tier output was insufficient, log one line to `tier_overrides.md` in the project's memory folder: `<date> — <task class> (T<n>) — <reason> → T<n+1>`. Escalate and log; don't stop to ask.
+
 ### Escalation Log
 
 When you escalate a task from Tier N to Tier N+1 because the lower-tier output was insufficient, append a one-line entry to `tier_overrides.md` in the project's memory folder.
