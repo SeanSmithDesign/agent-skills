@@ -25,7 +25,15 @@ Nothing has been built yet.
   global CLAUDE.md calls load-bearing), uncommitted since `c94f929`, 2026-07-06; plus a deleted
   `policy-limits.json` and a deleted Annotie memory tree. Commit by explicit path.
   **Pushing `~/.claude` is reserved for Sean** (`ORCHESTRATOR.md:35`).
-- [ ] **Resolve the admission path before writing any wrap rule.** DECIDE OR KILL. All three
+- [x] **Admission path resolved: KILLED, no fourth path needed.** Done, `f966aec`. The premise was
+  wrong. `Discovered:` records provenance, not validation; the field that matters is `Eval test to
+  run:`, and 2 of 3 live entries already name *prospective* tests — UPD-003 literally says "add a 9th
+  test prompt to the suite," which IS the proposed fourth path, shipped in April. Field 3 was always
+  satisfiable by a wrap. The separate-staging-list alternative is also killed: `pending` already means
+  "recorded, not yet validated," and a second staging concept is redundant. Field 3 reworded to
+  "name the eval test that validates it, existing or to-be-added" — clarifying de facto practice,
+  not widening the rule. The wrap rule is unblocked.
+- [ ] ~~Resolve the admission path before writing any wrap rule.~~ DECIDE OR KILL. All three
   registry entries record `Discovered: from post-slim behavioral eval` and each names a test that was
   already run, so field 3 of the admission rule (`skills/orchestrator-update/SKILL.md:93`) is
   retrospectively unproducible by a wrap that ran no eval. Strawman: admit a fourth path, "names the
@@ -59,3 +67,18 @@ Nothing has been built yet.
   the Cardinal Rule, the scope-card rule, and the non-boot session guidance. A cold installer from
   this public repo inherits the old prompt. Decide whether the template should be regenerated from the
   installed file or is deliberately a different artifact.
+
+- [ ] **Prospective eval tests leak — they are never written back into the suite.** Discovered while
+  resolving the admission path. `~/.claude/evals/orchestrator-smoke-test.md` still contains exactly 8
+  tests (`grep -cE '^### [0-9]+\.'` → 8; no test 9 or 10 anywhere in the file). But UPD-002 and
+  UPD-003 both record their named tests as run and passing — `Synthetic Test 9 (rehydration
+  short-circuit): PASS HIGH`, `Synthetic Test 10 (10-unit audit): PASS HIGH`. Those tests were run
+  once synthetically and evaporated. Two shipped behaviors therefore have zero standing coverage, and
+  the validation that justified applying them cannot be re-run. This matters more once the wrap rule
+  lands, because wrap-authored entries will name prospective tests too and leak identically.
+  Fix: gate Step 6 of `skills/orchestrator-update/SKILL.md` — an entry cannot move to `applied-` until
+  its named test actually exists in the suite. Touches `~/.claude/evals/`, so the backfill of tests
+  9 and 10 is Sean's call.
+- [ ] **`orchestrator-smoke-test.md:7` cites the stale Ghostty "Orchestrator" template.** Global
+  CLAUDE.md records that template as non-existent; launch is `cco` / `ccob` now. One-line fix, in
+  `~/.claude`, noticed incidentally.
