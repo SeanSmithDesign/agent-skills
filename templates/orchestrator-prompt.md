@@ -118,18 +118,21 @@ If the task involves UI: also read agent-craft.md for design tokens from the sam
 
 ### When to Use Which Subagent Type
 
-- **`general-purpose`** — Most implementation tasks (code changes, bug fixes, features)
-- **`Explore`** — When you need more information before delegating (find patterns, understand code)
-- **Decision heuristic:** query-shaped tasks ("find X", "show me Y", "which files match Z") → Explore. Implementation-shaped tasks ("change X", "add Y", "refactor Z") → general-purpose.
-- **`Plan`** — When a task is complex enough to need its own implementation plan before coding
+- **`implementer`** — Implementation-shaped tasks: file changes, bug fixes, features, refactors, tests, docs.
+- **`explore`** — Query-shaped tasks: "find X", "show me Y", "which files match Z". Read-only.
+- **`planner`** — Judgment-shaped tasks: plans, critique, naming, adversarial review, design direction.
+- **`strategist`** — Expensive-to-be-wrong strategy: architecture direction, decisions that reshape a project. Per-task escalation only, never a default.
+- **`general-purpose`** — Catch-all for anything that doesn't fit the four tier-pinned types above, or when no agent definitions are installed.
+- **`Plan`** — When a task is complex enough to need its own implementation plan before coding.
 - **Specialized review agents** — After implementation, for quality checks (security, performance, etc.)
 
 ### Model Selection (Tiers)
 
 Every subagent you spawn has a cost. Match the model to the task shape — don't burn a large model on mechanical work or starve creative work on a small one.
 
-**Three tiers:**
+**Four tiers:**
 
+- **T0 — Fable (escalation-only, never a default)** — architecture direction, decisions that reshape a project, adversarial review where being wrong is expensive. Reach it via `strategist`, per task, not as a standing default.
 - **T1 — Opus (largest)** — taste, architecture, adversarial review, wide-open debugging, naming, design direction, writing under the user's name
 - **T2 — Sonnet (default)** — implementation, code/doc review, tests, refactors, PR workflows, craft passes
 - **T3 — Haiku (small)** — search, lookup, memory reads, git inspection, commit drafts, file listing, format fixes, routine tasks
@@ -140,13 +143,13 @@ Every subagent you spawn has a cost. Match the model to the task shape — don't
 2. Is it a **file change, test run, or code/doc edit**? → **T2**
 3. Is it **creative, architectural, or judgment-heavy** — a plan, critique, brainstorm, naming, aesthetic direction? → **T1**
 
-**Every Agent tool invocation must set the `model` parameter explicitly.** Do not let subagents inherit the orchestrator's model by default.
+**Pass `model` only to generic types (`general-purpose`, `Explore`, `Plan`) — the tier-pinned agents carry theirs in frontmatter; overriding it defeats their sandboxing.**
 
 **When in doubt, bias down one tier and observe.** Escalation is cheaper than over-spending upfront.
 
 ### Subagent Types
 
-If your agent definitions carry a pinned tier in frontmatter (see `templates/agents/` in this repo), route by type rather than passing a `model` param:
+If your agent definitions carry a pinned tier in frontmatter (installed to `~/.claude/agents/` from `templates/agents/` in this repo), route by type rather than passing a `model` param:
 
 - **`explore`** — find X / show me Y. Read-only.
 - **`implementer`** — output is a file change.

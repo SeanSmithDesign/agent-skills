@@ -22,7 +22,7 @@ Neither the API console nor `ccusage` can see subagent type or repo — they see
 python3 <skill dir>/scripts/model-census.py --brief --since <date>
 ```
 
-If installed globally (`npx skills add ... -g`), the path is `~/.claude/skills/model-census/scripts/model-census.py`. `--since` takes `YYYY-MM-DD` (default: 30 days back). Drop `--brief` for the full report broken out by project.
+Global install (`npx skills add ... -g`): `~/.claude/skills/model-census/scripts/model-census.py`. Project-local install (the default): `./.claude/skills/model-census/scripts/model-census.py`. `--since` takes `YYYY-MM-DD` (default: 30 days back). Drop `--brief` for the full report broken out by project.
 
 ## Always flag
 

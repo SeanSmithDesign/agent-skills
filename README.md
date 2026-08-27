@@ -94,10 +94,18 @@ curl -o ~/.claude/hooks/model-default-guard.sh \
 chmod +x ~/.claude/hooks/model-default-guard.sh
 ```
 
-Register the hook in `~/.claude/settings.json`:
+Register the hook — this needs `jq` (`brew install jq`, or your package manager's equivalent; without it the guard silently no-ops instead of firing).
+
+Add this entry to the `hooks.SessionStart` array in your existing `settings.json` — append, don't replace:
 
 ```json
-{"hooks":{"SessionStart":[{"matcher":"","hooks":[{"type":"command","command":"\"$HOME\"/.claude/hooks/model-default-guard.sh"}]}]}}
+{"type":"command","command":"\"$HOME\"/.claude/hooks/model-default-guard.sh"}
+```
+
+Safe merge (keeps any hooks already registered):
+
+```bash
+jq '.hooks.SessionStart = ((.hooks.SessionStart // []) + [{"matcher":"","hooks":[{"type":"command","command":"\"$HOME\"/.claude/hooks/model-default-guard.sh"}]}])' ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
 ```
 
 ---
@@ -231,7 +239,7 @@ Repos accumulate debt the same way context windows do, gradually, then all at on
 
 ### Tiers family: model hygiene
 
-Four agent tiers, pinned once in agent frontmatter instead of decided per spawn. The orchestrator never passes a `model` param to `explore`, `implementer`, `planner`, or `strategist` — each carries its own tier, so routing can't drift task by task. Fable, the top tier, doesn't get to be a main-thread default: it's a per-task `strategist` seat only, because the main thread is the expensive place for a big model to sit — it pays to read every tool output, not just to think. The one skill in this family, `/model-census`, exists because none of the usual cost tools can see any of this: not the API console, not `ccusage`. They see tokens against an API key. They don't see which agent definition ran, or which repo it ran in.
+Four agent tiers, pinned once in agent frontmatter instead of decided per spawn. The orchestrator never passes a `model` param to `explore`, `implementer`, `planner`, or `strategist` — each carries its own tier, so routing can't drift task by task. Fable, the top tier, gets a per-task `strategist` seat instead of the main-thread default, because the main thread is the expensive place for a big model to sit — it pays to read every tool output, not just to think. The one skill in this family, `/model-census`, exists because none of the usual cost tools can see any of this: not the API console, not `ccusage`. They see tokens against an API key. They don't see which agent definition ran, or which repo it ran in.
 
 ### /model-census
 
@@ -240,7 +248,7 @@ Four agent tiers, pinned once in agent frontmatter instead of decided per spawn.
 **When:** you want to check tier routing is actually holding, or see where Fable/Opus tokens are going.
 **Does:** reads local transcripts (`~/.claude/projects/**`) and reconstructs, per main thread and per subagent, which model actually executed — joining the parent thread's subagent-type declaration to the subagent's own transcript by agent ID, since the two files don't share that link directly. `--brief --since <date>` for the quick version. Flag two things on sight: any Fable or top-tier row in the main-thread table, and a global `model` key in `settings.json` — that's usually `/model <x>` + Enter run without the session-only flag, and it silently taxes every session after. Token counts reported are raw, not dollars.
 
-Verified against ~1,250 subagent runs over a month: zero tier leaks. The leak was the main thread — `/model <x>` + Enter silently saves a global default; the SessionStart guard catches that.
+On my machine, across ~1,500 subagent runs in a month, every run of the three pinned agents landed on its pinned model unless the caller passed an explicit `model` override — routing never leaked on its own. The cost leak was the main thread: `/model <x>` + Enter silently saves a global default. The SessionStart guard catches that.
 
 ---
 

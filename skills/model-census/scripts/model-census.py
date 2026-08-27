@@ -7,18 +7,27 @@
 # Output/input token counts are raw counts, not dollars.
 import json, os, re, sys, glob, collections, datetime, argparse
 
-ROOT = os.path.expanduser('~/.claude/projects')
+ROOT = os.path.join(os.environ.get('CLAUDE_CONFIG_DIR', os.path.expanduser('~/.claude')), 'projects')
+
+def _since_date(s):
+    try:
+        return datetime.datetime.strptime(s, '%Y-%m-%d').astimezone()
+    except ValueError:
+        raise argparse.ArgumentTypeError('--since must be YYYY-MM-DD')
 
 p = argparse.ArgumentParser()
-p.add_argument('--since', default=None, help='YYYY-MM-DD (local midnight), default 30 days ago')
+p.add_argument('--since', default=None, type=_since_date, help='YYYY-MM-DD (local midnight), default 30 days ago')
 p.add_argument('--brief', action='store_true')
 args = p.parse_args()
 
 if args.since:
-    # naive -> local tz via astimezone() (py3.6+)
-    SINCE = datetime.datetime.strptime(args.since, '%Y-%m-%d').astimezone()
+    SINCE = args.since
 else:
     SINCE = datetime.datetime.now().astimezone() - datetime.timedelta(days=30)
+
+if not os.path.isdir(ROOT):
+    print(f"no transcripts at {ROOT}")
+    sys.exit(0)
 
 def it(path):
     with open(path,errors='ignore') as f:
