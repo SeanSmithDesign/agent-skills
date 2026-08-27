@@ -8,7 +8,11 @@ Plan plus the unedited refutation live at `~/.claude/plans/config-evolution/`
 (`draft-plan.md`, `refutation.md`). Verdict was **revise**; the revised order is below.
 Nothing has been built yet.
 
-- [ ] **Fix the pending-updates counter (do this FIRST, everything else is downstream).**
+- [x] **Fix the pending-updates counter.** Done, `b2cda14`. Reader (`orchestrator-boot/SKILL.md:19`),
+  writer instruction (`orchestrator-update/SKILL.md:15,73`), and `templates/orchestrator-prompt.md:13`
+  now all use the registry's real `- **Status:** pending` format. Verified by execution: synthetic
+  pending entry → 1, real registry (3 applied entries) → 0.
+- [ ] ~~Fix the pending-updates counter (do this FIRST, everything else is downstream).~~
   `skills/orchestrator-boot/SKILL.md:19` counts with `grep -c 'status: pending'`, but the registry
   and `templates/PENDING-UPDATES.md:28` both write `- **Status:** pending`. Case-sensitive substring
   mismatch, so the counter returns 0 for a correctly-formatted entry and boot has been silent since
@@ -47,3 +51,11 @@ Nothing has been built yet.
 - [ ] **Not doing, deliberately:** redesigning the four-channel model, moving skills from the private
   `claude-config` into this public repo, adding `## Learnings` sections to skills generally, or
   touching `ce-compound` / `docs/solutions/` routing.
+
+- [ ] **`templates/orchestrator-prompt.md` is stale against the prompt Sean actually runs.** Discovered
+  while verifying the counter fix. The installed `~/.claude/orchestrator-prompt.md` is a slimmer,
+  newer design that delegates session start to the `/orchestrator-boot` skill; the repo template still
+  inlines a "Phase 1: Codebase Exploration" flow with the counting logic written out, and is missing
+  the Cardinal Rule, the scope-card rule, and the non-boot session guidance. A cold installer from
+  this public repo inherits the old prompt. Decide whether the template should be regenerated from the
+  installed file or is deliberately a different artifact.
