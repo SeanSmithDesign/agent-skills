@@ -16,7 +16,7 @@ If the `TASK_FILE` env var points at a task file, read it. It is markdown with Y
 **Never read `PENDING-UPDATES.md` in full at boot** — it is ~4.6k chars to produce a number. Count with grep:
 
 ```bash
-grep -c 'status: pending' ~/.claude/PENDING-UPDATES.md
+grep -ci '^- \*\*Status:\*\* *pending$' ~/.claude/PENDING-UPDATES.md
 ```
 
 Surface only — apply nothing. Read the file itself only when the count is non-zero AND Sean wants to act on it.

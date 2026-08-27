@@ -12,7 +12,7 @@ Manage the orchestrator's config evolution. Opt-in: nothing auto-applies.
 ## When to use
 
 - You run `/orchestrator:update` explicitly
-- Session-start check found entries in `~/.claude/PENDING-UPDATES.md` with `status: pending` and you want to review
+- Session-start check found entries in `~/.claude/PENDING-UPDATES.md` with `- **Status:** pending` and you want to review
 - After any significant model or config change, to catch regressions early
 
 ## Workflow
@@ -70,7 +70,7 @@ After all selected entries applied:
 
 For each applied entry:
 
-- Change `status: pending` to `status: applied-YYYY-MM-DD`
+- Change `- **Status:** pending` to `- **Status:** applied-YYYY-MM-DD`
 - Append a `**Actual eval delta:** [numbers]` line
 - If delta is worse than expected, add a `**Caveat:**` line
 

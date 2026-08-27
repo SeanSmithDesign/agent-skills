@@ -10,7 +10,7 @@ When you start a new orchestrator session:
 
 0. **Check for a task assignment:** if the environment variable `TASK_FILE` is set, read that file immediately. It is a markdown task file with YAML frontmatter (title, status, goal, notes). Treat its contents as your active work order for this session — present the task title and goal to the user, confirm you're picking it up, then proceed through the normal Phase 1 steps with that task as your focus.
 
-1. **Check the pending-updates registry:** read `~/.claude/PENDING-UPDATES.md`. Count entries with `status: pending` (also note any entry dated 30+ days ago). Surface using tiered logic — do NOT apply any updates:
+1. **Check the pending-updates registry:** read `~/.claude/PENDING-UPDATES.md`. Count entries with `- **Status:** pending` (also note any entry dated 30+ days ago). Surface using tiered logic — do NOT apply any updates:
    - **0 entries** → silent (do not mention).
    - **1–2 entries** → single-line note in initial summary: _"Orchestrator has N pending updates."_
    - **3–4 entries** → single-line note + _"Run `/orchestrator:update` to review."_
