@@ -90,7 +90,7 @@ When adding a new pending entry during a session:
 
 1. It must tie to output quality OR token/context cost
 2. It must specify an `Expected eval delta` in measurable terms
-3. It must specify which eval test to run for validation
+3. It must name the eval test that validates it, existing or to-be-added
 4. If any of these is missing, it doesn't belong in the registry — file as a Linear issue instead
 
 ## Prune mode
