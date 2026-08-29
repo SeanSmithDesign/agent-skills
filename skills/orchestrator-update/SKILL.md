@@ -73,6 +73,7 @@ For each applied entry:
 - Change `- **Status:** pending` to `- **Status:** applied-YYYY-MM-DD`
 - Append a `**Actual eval delta:** [numbers]` line
 - If delta is worse than expected, add a `**Caveat:**` line
+- If the entry's `Eval test to run:` names a test not yet in `~/.claude/evals/orchestrator-smoke-test.md`, write that test into the suite before marking the entry `applied-`
 
 ### Step 7 — Report to Sean
 
