@@ -263,7 +263,7 @@ These skills reference my specific setup. Here's what that means and what you'd 
 | ORCHESTRATOR.md                     | State file for orchestrator threads | Optional, only relevant if you use the orchestrator pattern                   |
 | `.claude/projects/*/memory/`        | Per-project memory dir              | Optional, Claude Code memory convention                                      |
 | `~/.claude/orchestrator-prompt.md`  | Orca system prompt                  | Required for orchestrator family, copy from `templates/`                     |
-| `~/.claude/PENDING-UPDATES.md`      | Config update registry              | Required for `/orchestrator:update`, copy from `templates/`                  |
+| `~/.claude/PENDING-UPDATES.md`      | Config update registry              | Required for `/orchestrator:update`; `/wrap` also writes to it, copy from `templates/` |
 | `~/.claude/projects/SCAFFOLDING.md` | Per-project scaffold version index  | Used by `/orchestrator:scaffold`, create manually |
 | `~/.claude/evals/`                  | Token + behavioral regression suite | Optional. Without it, `/orchestrator:update` falls back to a `wc -c` byte-count baseline and skips the behavioral suite |
 
