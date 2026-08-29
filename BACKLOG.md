@@ -39,7 +39,12 @@ Nothing has been built yet.
   retrospectively unproducible by a wrap that ran no eval. Strawman: admit a fourth path, "names the
   eval test that would need to be added." Alternative: entries stage in a separate list, not the
   registry itself.
-- [ ] **Then the wire, last.** One sentence in `skills/wrap/SKILL.md` step 5 routing tooling and
+- [x] **The wire, last.** Done, `f4a269a`. One sentence added to `skills/wrap/SKILL.md` step 5
+  (Learnings) routing tooling/config learnings to `~/.claude/PENDING-UPDATES.md` when they satisfy the
+  admission rule, referencing that rule by name rather than restating it. `README.md:266` corrected in
+  the same commit so the registry row no longer implies `/orchestrator:update` is its only consumer.
+  Per `CONTEXT-RIGHTSIZING.md`: intent stated once, no table row, no restated clause.
+- [ ] ~~Then the wire, last.~~ One sentence in `skills/wrap/SKILL.md` step 5 routing tooling and
   config learnings to `~/.claude/PENDING-UPDATES.md` when they clear the admission rule, plus the
   matching `README.md:227` correction in the same commit (that line currently scopes the registry to
   the orchestrator family only, which the new rule would contradict). One sentence, no table row, no
@@ -60,7 +65,12 @@ Nothing has been built yet.
   `claude-config` into this public repo, adding `## Learnings` sections to skills generally, or
   touching `ce-compound` / `docs/solutions/` routing.
 
-- [ ] **`templates/orchestrator-prompt.md` is stale against the prompt Sean actually runs.** Discovered
+- [~] **`templates/orchestrator-prompt.md` — partially reconciled by a sibling session (`4fbaff2`).**
+  The Cardinal Rule is now present in the template. The two files still diverge substantially
+  (`diff` against the installed `~/.claude/orchestrator-prompt.md` is 367 lines), so a cold installer
+  still does not get the prompt Sean runs. Reassess whether full parity is the goal or whether the
+  template is deliberately a different artifact.
+- [ ] ~~`templates/orchestrator-prompt.md` is stale against the prompt Sean actually runs.~~ Discovered
   while verifying the counter fix. The installed `~/.claude/orchestrator-prompt.md` is a slimmer,
   newer design that delegates session start to the `/orchestrator-boot` skill; the repo template still
   inlines a "Phase 1: Codebase Exploration" flow with the counting logic written out, and is missing
@@ -68,7 +78,15 @@ Nothing has been built yet.
   this public repo inherits the old prompt. Decide whether the template should be regenerated from the
   installed file or is deliberately a different artifact.
 
-- [ ] **Prospective eval tests leak — they are never written back into the suite.** Discovered while
+- [x] **Prospective eval-test leak: gated.** Done, `b1dc551`. Step 6 of `orchestrator-update` now
+  requires that a named-but-nonexistent test be written into `~/.claude/evals/orchestrator-smoke-test.md`
+  before an entry can be marked `applied-`. Closes the leak going forward, including for the
+  wrap-authored entries the new wire will produce.
+- [ ] **Backfill eval tests 9 and 10 — still missing, still uncovered.** The gate above stops NEW
+  leaks; it does not retroactively create the two tests already lost. The suite is still 8 tests, and
+  the rehydration short-circuit (UPD-002) and fanout ceiling (UPD-003) remain live behaviors with zero
+  standing coverage. Writing them means editing `~/.claude/evals/`, which is Sean's call.
+- [ ] ~~Prospective eval tests leak — they are never written back into the suite.~~ Discovered while
   resolving the admission path. `~/.claude/evals/orchestrator-smoke-test.md` still contains exactly 8
   tests (`grep -cE '^### [0-9]+\.'` → 8; no test 9 or 10 anywhere in the file). But UPD-002 and
   UPD-003 both record their named tests as run and passing — `Synthetic Test 9 (rehydration
@@ -82,3 +100,7 @@ Nothing has been built yet.
 - [ ] **`orchestrator-smoke-test.md:7` cites the stale Ghostty "Orchestrator" template.** Global
   CLAUDE.md records that template as non-existent; launch is `cco` / `ccob` now. One-line fix, in
   `~/.claude`, noticed incidentally.
+
+- [x] **`policy-limits.json` untracking — skipped by decision (2026-08-28).** Commit was blocked by the
+  auto-mode classifier; Sean elected to skip rather than spend a permission. The tree keeps one
+  standing `D policy-limits.json`. Not a defect, a choice.
