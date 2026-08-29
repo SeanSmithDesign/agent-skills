@@ -82,7 +82,9 @@ Nothing has been built yet.
   requires that a named-but-nonexistent test be written into `~/.claude/evals/orchestrator-smoke-test.md`
   before an entry can be marked `applied-`. Closes the leak going forward, including for the
   wrap-authored entries the new wire will produce.
-- [ ] **Backfill eval tests 9 and 10 — still missing, still uncovered.** The gate above stops NEW
+- [ ] **Backfill eval tests 9 and 10** — now tracked as UPD-004 in `~/.claude/PENDING-UPDATES.md`
+  (`1afa5e6`), routed there by `/wrap` under the new step-5 rule. Run `/orchestrator:update` to apply.
+- [ ] ~~Backfill eval tests 9 and 10 — still missing, still uncovered.~~ The gate above stops NEW
   leaks; it does not retroactively create the two tests already lost. The suite is still 8 tests, and
   the rehydration short-circuit (UPD-002) and fanout ceiling (UPD-003) remain live behaviors with zero
   standing coverage. Writing them means editing `~/.claude/evals/`, which is Sean's call.
