@@ -104,3 +104,14 @@ Nothing has been built yet.
 - [x] **`policy-limits.json` untracking — skipped by decision (2026-08-28).** Commit was blocked by the
   auto-mode classifier; Sean elected to skip rather than spend a permission. The tree keeps one
   standing `D policy-limits.json`. Not a defect, a choice.
+
+- [ ] **The zsh working-tree collision guard did not fire on two concurrent sessions (2026-08-28).**
+  Global CLAUDE.md says the `claude()` guard in `~/.claude/shell/zshrc` locks on the tree and isolates
+  a second live session automatically. On 2026-08-28 this thread and a sibling "tiers" thread both
+  wrote `~/.claude` and `~/Code/agent-skills` directly, all session, with no isolation. Nothing was
+  lost — the sibling committed only its own new files and this thread staged by explicit path every
+  time — but `git add -A` from either side would have crossed them. Observed, not inferred: sibling
+  commits `d93dab7`/`1253439`/`e76fe02`/`5c52066` in claude-config and `094cade`/`4fbaff2` here,
+  interleaved with this thread's. Determine whether the guard only covers zsh launches (this session
+  may not have come through it) or whether it is genuinely broken. Off-objective, discovered
+  incidentally.
