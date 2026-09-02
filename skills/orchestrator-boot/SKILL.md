@@ -9,7 +9,7 @@ Session-start sequence for an orchestrator thread. Run once, at first activation
 
 ## 1. Task assignment
 
-If the `TASK_FILE` env var points at a task file, read it. It is markdown with YAML frontmatter (title, status, goal, notes). Treat it as this session's work order: present the title and goal, confirm you're picking it up, then continue through the steps below with that as the focus.
+If the `TASK_FILE` env var points at a task file, read it. It is markdown with YAML frontmatter (title, status, goal, notes). Treat it as this session's work order: present the title and goal in one line, then continue through the steps below with that as the focus.
 
 ## 2. Pending updates
 
@@ -71,4 +71,4 @@ Architecture (layers, data flow, key abstractions) · conventions · fragile are
 
 ## 7. Present
 
-Summarize for confirmation before doing any work.
+Present the state in one screen. If the session already has an objective (a task file, a pickup body, or the first message), begin it without waiting for a confirmation.
